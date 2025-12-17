@@ -4,7 +4,7 @@ services:
     name: illust-store
     env: php
     plan: starter
-    buildCommand: composer install --optimize-autoloader --no-dev && npm ci && npm run build
+    buildCommand: /usr/local/bin/composer install --optimize-autoloader --no-dev && /usr/bin/npm ci && /usr/bin/npm run build
     startCommand: /usr/bin/php artisan optimize && /usr/bin/php artisan migrate --force && /usr/bin/php artisan storage:link || true && /usr/bin/php -S 0.0.0.0:$PORT -t public
     envVars:
       - key: APP_ENV
@@ -31,7 +31,7 @@ services:
     name: illust-store-queue
     env: php
     plan: starter
-    buildCommand: composer install --optimize-autoloader --no-dev && npm install && npm run build
+    buildCommand: /usr/local/bin/composer install --optimize-autoloader --no-dev && /usr/bin/npm install && /usr/bin/npm run build
     startCommand: /usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-time=3600
     envVars:
       - key: APP_ENV
@@ -50,7 +50,7 @@ services:
     name: illust-store-reverb
     env: php
     plan: starter
-    buildCommand: composer install --optimize-autoloader --no-dev && npm install && npm run build
+    buildCommand: /usr/local/bin/composer install --optimize-autoloader --no-dev && /usr/bin/npm install && /usr/bin/npm run build
     startCommand: /usr/bin/php artisan reverb:start --host=0.0.0.0 --port=$PORT
     envVars:
       - key: APP_ENV
