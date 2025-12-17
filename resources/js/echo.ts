@@ -20,12 +20,19 @@ if (import.meta.env.PROD) {
 }
 
 // Reverbサーバーが起動していない場合でもエラーを表示しない
+// nginx方式の場合、ポート番号を指定しない（nginxがプロキシするため）
+const reverbPort = import.meta.env.VITE_REVERB_PORT;
+const isNginxMode = !reverbPort || reverbPort === '443' || reverbPort === '80';
+
 const reverbConfig: any = {
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY || 'your-app-key',
     wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
-    wsPort: import.meta.env.VITE_REVERB_PORT ?? 8080,
-    wssPort: import.meta.env.VITE_REVERB_PORT ?? 8080,
+    // nginx方式の場合はポート番号を指定しない（デフォルトの443を使用）
+    ...(isNginxMode ? {} : {
+        wsPort: parseInt(reverbPort || '8080', 10),
+        wssPort: parseInt(reverbPort || '8080', 10),
+    }),
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'http') === 'https',
     enabledTransports: ['ws', 'wss'],
     authEndpoint: '/broadcasting/auth',

@@ -89,14 +89,15 @@ REVERB_SCHEME=https
 
 VITE_REVERB_APP_KEY=o0heug5kJmgavxcRVSTDB6eVxRAXTPOV
 VITE_REVERB_HOST=illust-store.onrender.com
-VITE_REVERB_PORT=8080
+VITE_REVERB_PORT=443
 VITE_REVERB_SCHEME=https
 ```
 
 **重要**: 
-- `REVERB_PORT`と`VITE_REVERB_PORT`は`8080`に設定（コンテナ内のポート）
-- nginxが外部からのリクエストを`/app/`パスでReverbサーバーにプロキシ
-- **現在、`REVERB_PORT=8080`と`VITE_REVERB_PORT=443`が異なっているため、`VITE_REVERB_PORT`を`8080`に変更してください**
+- `REVERB_PORT=8080`: コンテナ内のReverbサーバーのポート（nginxがプロキシする）
+- `VITE_REVERB_PORT=443`: クライアント側が接続するポート（nginxがリッスンするポート、または設定しない）
+- nginxが外部からのリクエストを`/app/`パスでReverbサーバー（Port 8080）にプロキシ
+- **`VITE_REVERB_PORT`は`443`に設定するか、設定しない（デフォルトの443を使用）**
 
 ### ステップ4: 再デプロイ
 
