@@ -21,8 +21,18 @@ composer install --optimize-autoloader --no-dev && npm install && npm run build
 
 #### 2. Start Commandの確認
 
+**重要**: Renderダッシュボードで直接設定されている場合、render.yamlの設定は無視されます。
+
+以下のコマンドをRenderダッシュボードの「Start Command」に設定してください：
+
 ```bash
-php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan migrate --force && php artisan storage:link && php -S 0.0.0.0:$PORT -t public
+/usr/bin/php artisan optimize && /usr/bin/php artisan migrate --force && /usr/bin/php artisan storage:link || true && /usr/bin/php -S 0.0.0.0:$PORT -t public
+```
+
+または、より確実な方法（PHPのパスを自動検出）：
+
+```bash
+$(which php || echo php) artisan optimize && $(which php || echo php) artisan migrate --force && $(which php || echo php) artisan storage:link || true && $(which php || echo php) -S 0.0.0.0:$PORT -t public
 ```
 
 #### 3. 代替案: シンプルなコマンド

@@ -23,6 +23,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 本番用商品シーダーを実行（コメントアウトを外すと実行されます）
-        // $this->call(ProductionProductSeeder::class);
+        $this->call(ProductionProductSeeder::class);
     }
 }

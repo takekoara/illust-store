@@ -104,9 +104,16 @@ php artisan config:clear && php artisan optimize && ...
 ### Q: APP_URLを変更してもエラーが続く
 
 **A**: 以下を確認してください：
-1. 環境変数が正しく保存されているか
-2. サービスを再デプロイしたか
-3. ブラウザのキャッシュをクリアしたか
+1. 環境変数が正しく保存されているか（末尾に`/`がないか確認）
+2. **設定キャッシュがクリアされているか**（`config:clear`が実行されているか）
+3. **HTTPS強制が有効になっているか**（`AppServiceProvider`で`URL::forceScheme('https')`が設定されているか）
+4. **プロキシが信頼されているか**（`bootstrap/app.php`で`trustProxies(at: '*')`が設定されているか）
+5. サービスを再デプロイしたか
+6. ブラウザのキャッシュをクリアしたか
+
+**最も可能性が高い原因**: 
+- `php artisan optimize`が設定キャッシュを作成するため、`APP_URL`の変更が反映されていない可能性があります。Start Commandに`config:clear`を追加してください。
+- Renderなどのリバースプロキシ環境では、`URL::forceScheme('https')`と`trustProxies(at: '*')`の設定が必要です。
 
 ### Q: 一部のアセットだけがHTTPになっている
 
