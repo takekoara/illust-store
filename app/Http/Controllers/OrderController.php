@@ -82,10 +82,24 @@ class OrderController extends Controller
             'billing_address' => [],
         ]);
 
+        // Check if Stripe is configured
+        $stripeSecret = config('services.stripe.secret');
+        if (empty($stripeSecret)) {
+            Log::error('Stripe secret key is not configured', [
+                'order_id' => $tempOrder->id,
+            ]);
+            $tempOrder->delete();
+            $errorMessage = config('app.debug')
+                ? 'StripeのAPIキーが設定されていません。.envファイルにSTRIPE_SECRETを設定してください。'
+                : '決済処理の初期化に失敗しました。管理者にお問い合わせください。';
+            return redirect()->route('cart.index')
+                ->with('error', $errorMessage);
+        }
+
         // Create payment intent
         $clientSecret = null;
         try {
-            Stripe::setApiKey(config('services.stripe.secret'));
+            Stripe::setApiKey($stripeSecret);
             $paymentIntent = PaymentIntent::create([
                 'amount' => (int)($total * 100), // Convert to cents
                 'currency' => 'jpy',
@@ -106,11 +120,15 @@ class OrderController extends Controller
                 'order_id' => $tempOrder->id,
                 'error' => $e->getMessage(),
                 'stripe_error_code' => $e->getStripeCode(),
+                'stripe_error_type' => $e->getStripeCode(),
             ]);
             // Delete temp order if payment intent creation failed
             $tempOrder->delete();
+            $errorMessage = config('app.debug')
+                ? 'Stripe APIエラー: ' . $e->getMessage() . ' (コード: ' . $e->getStripeCode() . ')'
+                : '決済処理の初期化に失敗しました。しばらくしてから再度お試しください。';
             return redirect()->route('cart.index')
-                ->with('error', '決済処理の初期化に失敗しました。しばらくしてから再度お試しください。');
+                ->with('error', $errorMessage);
         } catch (\Exception $e) {
             Log::error('Stripe Payment Intent Error in create', [
                 'order_id' => $tempOrder->id,
@@ -119,8 +137,11 @@ class OrderController extends Controller
             ]);
             // Delete temp order if payment intent creation failed
             $tempOrder->delete();
+            $errorMessage = config('app.debug')
+                ? '決済処理エラー: ' . $e->getMessage()
+                : '注文の作成に失敗しました。しばらくしてから再度お試しください。';
             return redirect()->route('cart.index')
-                ->with('error', '注文の作成に失敗しました。しばらくしてから再度お試しください。');
+                ->with('error', $errorMessage);
         }
 
         return Inertia::render('Orders/Create', [
