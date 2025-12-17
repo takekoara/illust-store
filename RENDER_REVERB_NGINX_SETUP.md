@@ -8,20 +8,20 @@ Background Workerサービスが使えない無料プランでも、Dockerfile +
 
 ```
 ┌─────────────────────────────────┐
-│  Render Web Service (Port 80)   │
+│  Render Web Service ($PORT)      │
 │  ┌───────────────────────────┐  │
-│  │      nginx (Port 80)      │  │
+│  │      nginx ($PORT)         │  │
 │  │  ┌──────────┬──────────┐  │  │
-│  │  │  PHP     │  Reverb  │  │  │
-│  │  │  :8000   │  :8080   │  │  │
+│  │  │ PHP-FPM  │  Reverb  │  │  │
+│  │  │  :9000   │  :8081   │  │  │
 │  │  └──────────┴──────────┘  │  │
 │  └───────────────────────────┘  │
 └─────────────────────────────────┘
 ```
 
-- **nginx**: リバースプロキシ（Port 80）
-- **PHP**: Laravelアプリケーション（Port 8000）
-- **Reverb**: WebSocketサーバー（Port 8080）
+- **nginx**: リバースプロキシ（Renderの`$PORT`環境変数、通常は8080）
+- **PHP-FPM**: Laravelアプリケーション（Port 9000）
+- **Reverb**: WebSocketサーバー（Port 8081、nginxが`/app/`パスでプロキシ）
 - **supervisor**: プロセス管理
 
 ## 利点
@@ -42,9 +42,8 @@ Background Workerサービスが使えない無料プランでも、Dockerfile +
 ### ステップ1: ファイルの準備
 
 以下のファイルが作成されています：
-- `Dockerfile.nginx`: nginx + PHP + Reverbを含むDockerfile
-- `docker/nginx.conf`: nginxのメイン設定
-- `docker/default.conf`: nginxのサーバー設定（WebSocketプロキシ含む）
+- `Dockerfile.nginx`: nginx + PHP-FPM + Reverbを含むDockerfile
+- `docker/nginx.conf`: nginxの設定（WebSocketプロキシ含む）
 - `docker/supervisord.conf`: プロセス管理設定
 
 ### ステップ2: render.yamlの変更
@@ -84,7 +83,7 @@ REVERB_APP_ID=tK34wLfZcGCdVF8DgFwuI752XILl1y7v
 REVERB_APP_KEY=o0heug5kJmgavxcRVSTDB6eVxRAXTPOV
 REVERB_APP_SECRET=lv0gi6JcoH8JcRWY8rWOAahomSVSkTaC3v1OsLxeMEyYsBQB5zbVQut0HESdLPJ0
 REVERB_HOST=illust-store.onrender.com
-REVERB_PORT=8080
+REVERB_PORT=443
 REVERB_SCHEME=https
 
 VITE_REVERB_APP_KEY=o0heug5kJmgavxcRVSTDB6eVxRAXTPOV
@@ -94,9 +93,9 @@ VITE_REVERB_SCHEME=https
 ```
 
 **重要**: 
-- `REVERB_PORT=8080`: コンテナ内のReverbサーバーのポート（nginxがプロキシする）
-- `VITE_REVERB_PORT=443`: クライアント側が接続するポート（nginxがリッスンするポート、または設定しない）
-- nginxが外部からのリクエストを`/app/`パスでReverbサーバー（Port 8080）にプロキシ
+- `REVERB_PORT=443`: クライアント側が接続するポート（nginxがリッスンするポート）
+- コンテナ内では、ReverbサーバーがPort 8081で起動し、nginxが`/app/`パスでプロキシ
+- nginxがRenderの`$PORT`環境変数（通常は8080）でリッスン
 - **`VITE_REVERB_PORT`は`443`に設定するか、設定しない（デフォルトの443を使用）**
 
 ### ステップ4: 再デプロイ
