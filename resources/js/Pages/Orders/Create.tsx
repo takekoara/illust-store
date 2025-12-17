@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
@@ -38,6 +38,20 @@ function CheckoutForm({ cartItems, total, clientSecret, tempOrderId }: { cartIte
     const elements = useElements();
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const page = usePage();
+    
+    // Get CSRF token from shared props or meta tag
+    const getCsrfToken = (): string => {
+        const props = page.props as any;
+        if (props.csrfToken) {
+            return props.csrfToken;
+        }
+        const metaToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (metaToken) {
+            return metaToken;
+        }
+        return '';
+    };
 
     const { data, setData, post, processing: orderProcessing, errors } = useForm({
         billing_address: {
@@ -74,6 +88,19 @@ function CheckoutForm({ cartItems, total, clientSecret, tempOrderId }: { cartIte
                 return;
             }
 
+            // Get CSRF token
+            const csrfToken = getCsrfToken();
+            
+            // If CSRF token is not available, reload the page to get a fresh session
+            if (!csrfToken) {
+                setError('セッションが正しく開始されていません。ページをリロードしてください。');
+                setProcessing(false);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                return;
+            }
+
             // Update the temporary order with billing address
             const orderResponse = await fetch(route('orders.store'), {
                 method: 'POST',
@@ -81,10 +108,7 @@ function CheckoutForm({ cartItems, total, clientSecret, tempOrderId }: { cartIte
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN':
-                        document
-                            .querySelector('meta[name="csrf-token"]')
-                            ?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN': csrfToken,
                 },
                 body: JSON.stringify({
                     ...data,

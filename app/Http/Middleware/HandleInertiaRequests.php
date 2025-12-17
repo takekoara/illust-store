@@ -29,6 +29,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        // Ensure session is started (important for CSRF token generation)
+        // Accessing session() will automatically start the session if it hasn't been started
+        $request->session();
+
         $unreadNotificationCount = 0;
         if ($request->user()) {
             $unreadNotificationCount = \App\Models\CustomNotification::where('user_id', $request->user()->id)
@@ -53,6 +57,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+            'csrfToken' => csrf_token(),
         ];
     }
 }
