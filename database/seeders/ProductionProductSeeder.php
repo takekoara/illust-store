@@ -114,8 +114,8 @@ class ProductionProductSeeder extends Seeder
             ]);
 
             // 1～6個の画像をランダムに選択
-            $imageCount = fake()->numberBetween(1, 6);
-            $selectedImages = fake()->randomElements($availableImages, min($imageCount, count($availableImages)));
+            $imageCount = $faker->numberBetween(1, 6);
+            $selectedImages = $faker->randomElements($availableImages, min($imageCount, count($availableImages)));
 
             // 画像を追加
             foreach ($selectedImages as $index => $imagePath) {
