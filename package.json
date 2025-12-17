@@ -36,5 +36,8 @@
         "@stripe/react-stripe-js": "^5.4.1",
         "@stripe/stripe-js": "^8.5.3",
         "react-dropzone": "^14.3.8"
+    },
+    "optionalDependencies": {
+        "pg": "^8.11.3"
     }
 }
