@@ -4,7 +4,7 @@ services:
     name: illust-store
     env: php
     plan: starter
-    buildCommand: PHP_CMD=$(which php || echo php) && curl -sS https://getcomposer.org/installer | $PHP_CMD && $PHP_CMD composer.phar install --optimize-autoloader --no-dev && NPM_CMD=$(which npm || echo npm) && $NPM_CMD ci && $NPM_CMD run build
+    buildCommand: /usr/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && /usr/bin/php composer-setup.php && /usr/bin/php composer.phar install --optimize-autoloader --no-dev && /usr/bin/npm ci && /usr/bin/npm run build && /usr/bin/php -r "unlink('composer-setup.php');" || true
     startCommand: PHP_CMD=$(which php || echo php) && $PHP_CMD artisan optimize && $PHP_CMD artisan migrate --force && $PHP_CMD artisan storage:link || true && $PHP_CMD -S 0.0.0.0:$PORT -t public
     envVars:
       - key: APP_ENV
@@ -31,7 +31,7 @@ services:
     name: illust-store-queue
     env: php
     plan: starter
-    buildCommand: PHP_CMD=$(which php || echo php) && curl -sS https://getcomposer.org/installer | $PHP_CMD && $PHP_CMD composer.phar install --optimize-autoloader --no-dev && NPM_CMD=$(which npm || echo npm) && $NPM_CMD install && $NPM_CMD run build
+    buildCommand: /usr/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && /usr/bin/php composer-setup.php && /usr/bin/php composer.phar install --optimize-autoloader --no-dev && /usr/bin/npm install && /usr/bin/npm run build && /usr/bin/php -r "unlink('composer-setup.php');" || true
     startCommand: PHP_CMD=$(which php || echo php) && $PHP_CMD artisan queue:work --sleep=3 --tries=3 --max-time=3600
     envVars:
       - key: APP_ENV
@@ -50,7 +50,7 @@ services:
     name: illust-store-reverb
     env: php
     plan: starter
-    buildCommand: PHP_CMD=$(which php || echo php) && curl -sS https://getcomposer.org/installer | $PHP_CMD && $PHP_CMD composer.phar install --optimize-autoloader --no-dev && NPM_CMD=$(which npm || echo npm) && $NPM_CMD install && $NPM_CMD run build
+    buildCommand: /usr/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && /usr/bin/php composer-setup.php && /usr/bin/php composer.phar install --optimize-autoloader --no-dev && /usr/bin/npm install && /usr/bin/npm run build && /usr/bin/php -r "unlink('composer-setup.php');" || true
     startCommand: PHP_CMD=$(which php || echo php) && $PHP_CMD artisan reverb:start --host=0.0.0.0 --port=$PORT
     envVars:
       - key: APP_ENV
