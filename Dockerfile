@@ -18,21 +18,32 @@ RUN npm run build
 # 本番用PHPイメージ
 FROM php:8.2-fpm-alpine AS php-base
 
-# 必要なシステムパッケージをインストール
+# ビルド用の依存関係をインストール
+RUN apk add --no-cache --virtual .build-deps \
+    $PHPIZE_DEPS \
+    postgresql-dev \
+    libpng-dev \
+    libzip-dev \
+    oniguruma-dev \
+    freetype-dev \
+    libjpeg-turbo-dev
+
+# 実行時用の依存関係をインストール
 RUN apk add --no-cache \
     git \
     curl \
-    libpng-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    postgresql-dev \
-    oniguruma-dev \
+    libpng \
+    libzip \
+    postgresql-libs \
+    oniguruma \
+    freetype \
+    libjpeg-turbo \
     nodejs \
     npm
 
 # PHP拡張機能をインストール
-RUN docker-php-ext-install \
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_pgsql \
     mbstring \
@@ -41,6 +52,9 @@ RUN docker-php-ext-install \
     bcmath \
     gd \
     zip
+
+# ビルド依存関係を削除
+RUN apk del .build-deps
 
 # Composerをインストール
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -65,23 +79,14 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 # 本番用イメージ
 FROM php:8.2-cli-alpine
 
-# 必要なシステムパッケージをインストール
+# 実行時用の依存関係をインストール
 RUN apk add --no-cache \
     libpng \
     libzip \
     postgresql-libs \
-    oniguruma
-
-# PHP拡張機能をインストール
-RUN docker-php-ext-install \
-    pdo \
-    pdo_pgsql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip
+    oniguruma \
+    freetype \
+    libjpeg-turbo
 
 # 作業ディレクトリを設定
 WORKDIR /var/www/html
