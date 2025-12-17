@@ -16,6 +16,14 @@ class ProductionProductSeeder extends Seeder
      */
     public function run(): void
     {
+        // 既に商品が存在する場合はスキップ（重複を防ぐ）
+        if (Product::count() > 0) {
+            if ($this->command) {
+                $this->command->info('商品が既に存在するため、シーダーをスキップしました。');
+            }
+            return;
+        }
+
         if ($this->command) {
             $this->command->info('本番用商品データを生成中...');
         }
