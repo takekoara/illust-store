@@ -36,6 +36,26 @@ const isReverbConfigured = import.meta.env.VITE_REVERB_APP_KEY &&
 
 if (isReverbConfigured) {
     window.Echo = new Echo<any>(reverbConfig);
+    
+    // デバッグ用: Echo接続状態をログに記録（開発環境のみ、かつEchoオブジェクトが存在する場合のみ）
+    if (import.meta.env.DEV && window.Echo?.connector?.pusher?.connection) {
+        window.Echo.connector.pusher.connection.bind('connected', () => {
+            console.log('✅ Echo connected to Reverb');
+        });
+
+        window.Echo.connector.pusher.connection.bind('disconnected', () => {
+            console.log('❌ Echo disconnected from Reverb');
+        });
+
+        window.Echo.connector.pusher.connection.bind('error', (error: any) => {
+            // Reverbサーバーが起動していない場合は警告のみ（エラーを表示しない）
+            if (error?.error?.data?.code === 1006 || error?.type === 'TransportError') {
+                console.warn('⚠️ Reverb server is not running. Real-time features will not work.');
+            } else {
+                console.error('❌ Echo connection error:', error);
+            }
+        });
+    }
 } else {
     // Reverbが設定されていない場合はダミーのEchoオブジェクトを作成
     const dummyChannel = {
@@ -49,26 +69,11 @@ if (isReverbConfigured) {
         leave: () => {},
         disconnect: () => {},
     } as any;
-}
-
-// デバッグ用: Echo接続状態をログに記録（開発環境のみ）
-if (import.meta.env.DEV) {
-    window.Echo.connector.pusher.connection.bind('connected', () => {
-        console.log('✅ Echo connected to Reverb');
-    });
-
-    window.Echo.connector.pusher.connection.bind('disconnected', () => {
-        console.log('❌ Echo disconnected from Reverb');
-    });
-
-    window.Echo.connector.pusher.connection.bind('error', (error: any) => {
-        // Reverbサーバーが起動していない場合は警告のみ（エラーを表示しない）
-        if (error?.error?.data?.code === 1006 || error?.type === 'TransportError') {
-            console.warn('⚠️ Reverb server is not running. Real-time features will not work.');
-        } else {
-            console.error('❌ Echo connection error:', error);
-        }
-    });
+    
+    // 開発環境では、Reverbが設定されていないことをログに記録
+    if (import.meta.env.DEV) {
+        console.log('ℹ️ Reverb is not configured. Real-time features are disabled.');
+    }
 }
 
 export default window.Echo;
