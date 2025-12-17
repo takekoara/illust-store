@@ -65,7 +65,7 @@ services:
         sync: false  # WebサービスのURLを設定
 
   # PostgreSQLデータベース
-  - type: pgsql
+  - type: postgresql
     name: illust-store-db
     plan: starter
     databaseName: illust_store
