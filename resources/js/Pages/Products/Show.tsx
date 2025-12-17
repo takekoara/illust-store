@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { PageProps, Product, RelatedProduct } from '@/types';
 import PrimaryButton from '@/Components/PrimaryButton';
 import DangerButton from '@/Components/DangerButton';
@@ -16,6 +16,17 @@ interface Props extends PageProps {
 }
 
 export default function Show({ product, relatedProducts, auth, isLiked: initialIsLiked = false, isBookmarked: initialIsBookmarked = false, likeCount: initialLikeCount = 0, bookmarkCount: initialBookmarkCount = 0 }: Props) {
+    const page = usePage();
+    
+    // Get CSRF token from shared props or meta tag
+    const getCsrfToken = (): string => {
+        const props = page.props as any;
+        if (props.csrfToken) {
+            return props.csrfToken;
+        }
+        const metaToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        return metaToken || '';
+    };
     const { delete: destroy, processing } = useForm({});
     
     // 初期表示は primary 画像、なければ最初の画像
@@ -56,11 +67,19 @@ export default function Show({ product, relatedProducts, auth, isLiked: initialI
         }
 
         try {
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                console.error('CSRF token not available');
+                return;
+            }
+            
             const response = await fetch(route('likes.toggle', product.id), {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken,
                 },
             });
 
@@ -81,11 +100,19 @@ export default function Show({ product, relatedProducts, auth, isLiked: initialI
         }
 
         try {
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                console.error('CSRF token not available');
+                return;
+            }
+            
             const response = await fetch(route('bookmarks.toggle', product.id), {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken,
                 },
             });
 
