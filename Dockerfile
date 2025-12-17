@@ -107,7 +107,8 @@ ENV APP_DEBUG=false
 EXPOSE 8000
 
 # 起動コマンド
-CMD php artisan optimize && \
+CMD php artisan config:clear && \
+    php artisan optimize && \
     php artisan migrate --force && \
     php artisan storage:link || true && \
     php -S 0.0.0.0:${PORT:-8000} -t public

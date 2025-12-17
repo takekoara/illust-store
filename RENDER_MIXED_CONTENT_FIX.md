@@ -34,6 +34,7 @@ APP_URL=https://illust-store.onrender.com
 
 **重要**: 
 - `http://`ではなく`https://`を使用してください
+- **末尾の`/`は不要です**（`https://illust-store.onrender.com/`ではなく`https://illust-store.onrender.com`）
 - これが最も重要な設定です
 - `APP_URL`がHTTPの場合、アセットもHTTPで生成されます
 - **これだけでMixed Contentエラーは解決します**
@@ -60,9 +61,21 @@ export default defineConfig({
 
 `server`や`build`設定を追加すると、500エラーが発生する可能性があります。
 
-### ステップ3: 再デプロイ
+### ステップ3: 設定キャッシュをクリア（重要）
 
-環境変数を設定したら、サービスを再デプロイしてください。
+`php artisan optimize`が設定キャッシュを作成するため、`APP_URL`の変更が反映されない場合があります。
+
+**解決方法**: Start Commandに`config:clear`を追加します：
+
+```bash
+php artisan config:clear && php artisan optimize && ...
+```
+
+**注意**: `render.yaml`と`Dockerfile`のStart Commandを確認してください。既に修正済みの場合は、再デプロイするだけで反映されます。
+
+### ステップ4: 再デプロイ
+
+環境変数を設定し、設定キャッシュをクリアするコマンドを追加したら、サービスを再デプロイしてください。
 
 ## 確認方法
 
