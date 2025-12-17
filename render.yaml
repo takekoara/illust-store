@@ -1,0 +1,88 @@
+services:
+  # Webサービス（メインアプリケーション）
+  - type: web
+    name: illust-store
+    env: php
+    plan: starter
+    buildCommand: |
+      composer install --optimize-autoloader --no-dev &&
+      npm install &&
+      npm run build
+    startCommand: |
+      php artisan config:cache &&
+      php artisan route:cache &&
+      php artisan view:cache &&
+      php artisan migrate --force &&
+      php artisan storage:link &&
+      php -S 0.0.0.0:$PORT -t public
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: error
+      - key: FILESYSTEM_DISK
+        value: s3
+      # 環境変数はRenderダッシュボードで設定してください
+      # - APP_KEY
+      # - APP_URL
+      # - DB_* (PostgreSQL)
+      # - STRIPE_*
+      # - MAIL_*
+      # - AWS_* (S3設定)
+      # - REVERB_* (リアルタイムチャット使用時)
+
+  # キーワーカーサービス（キュー処理用）
+  - type: worker
+    name: illust-store-queue
+    env: php
+    plan: starter
+    buildCommand: |
+      composer install --optimize-autoloader --no-dev &&
+      npm install &&
+      npm run build
+    startCommand: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: error
+      - key: QUEUE_CONNECTION
+        value: database
+
+  # Reverbサーバー（リアルタイムチャット用 - オプション）
+  - type: worker
+    name: illust-store-reverb
+    env: php
+    plan: starter
+    buildCommand: |
+      composer install --optimize-autoloader --no-dev &&
+      npm install &&
+      npm run build
+    startCommand: php artisan reverb:start --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: BROADCAST_CONNECTION
+        value: reverb
+      - key: REVERB_SCHEME
+        value: https
+      - key: REVERB_HOST
+        sync: false  # WebサービスのURLを設定
+
+  # PostgreSQLデータベース
+  - type: pgsql
+    name: illust-store-db
+    plan: starter
+    databaseName: illust_store
+    user: illust_store_user
+
