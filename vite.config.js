@@ -10,4 +10,13 @@ export default defineConfig({
         }),
         react(),
     ],
+    server: {
+        hmr: {
+            host: 'localhost',
+        },
+    },
+    build: {
+        // 本番環境でアセットURLをHTTPSで生成
+        manifest: true,
+    },
 });
