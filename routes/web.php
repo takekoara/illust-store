@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/create', [App\Http\Controllers\OrderController::class, 'create'])->name('orders.create');
     Route::post('/orders', [App\Http\Controllers\OrderController::class, 'store'])->name('orders.store');
+    Route::post('/orders/cancel-temp', [App\Http\Controllers\OrderController::class, 'cancelTempOrder'])->name('orders.cancel-temp');
     Route::get('/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
 
     // Payment

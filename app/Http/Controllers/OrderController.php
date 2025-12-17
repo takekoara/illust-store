@@ -236,6 +236,37 @@ class OrderController extends Controller
     }
 
     /**
+     * Cancel a temporary order (called when payment fails or CSRF error occurs)
+     */
+    public function cancelTempOrder(Request $request)
+    {
+        $request->validate([
+            'temp_order_id' => 'required|integer|exists:orders,id',
+        ]);
+
+        $order = Order::find($request->temp_order_id);
+
+        // Only allow canceling own orders that are pending
+        if (!$order || $order->user_id !== Auth::id() || $order->status !== 'pending') {
+            return response()->json([
+                'message' => '注文が見つからないか、キャンセルできません。',
+            ], 404);
+        }
+
+        // Delete the temporary order
+        $order->delete();
+
+        Log::info('Temporary order cancelled', [
+            'order_id' => $order->id,
+            'user_id' => Auth::id(),
+        ]);
+
+        return response()->json([
+            'message' => '一時注文がキャンセルされました。',
+        ]);
+    }
+
+    /**
      * Display the specified order
      */
     public function show(Order $order): Response|RedirectResponse
@@ -245,12 +276,13 @@ class OrderController extends Controller
         }
 
         // Check payment status from Stripe using the payment_intent in the query string.
-        // Statusの変更はWebhookに限定し、ここでは表示用の真偽のみ判定する。
-        $paymentIntentId = request()->query('payment_intent');
+        // Also check if order has stripe_payment_intent_id and verify status
+        $paymentIntentId = request()->query('payment_intent') ?? $order->stripe_payment_intent_id;
         $redirectStatus = request()->query('redirect_status');
         $paymentVerified = false;
+        $stripePaymentStatus = null;
 
-        if ($paymentIntentId && $redirectStatus === 'succeeded') {
+        if ($paymentIntentId) {
             try {
                 Stripe::setApiKey(config('services.stripe.secret'));
                 $paymentIntent = PaymentIntent::retrieve($paymentIntentId);
@@ -260,8 +292,34 @@ class OrderController extends Controller
                 $intentMatchesOrder = $orderIdInMeta && (int)$orderIdInMeta === $order->id;
                 $intentMatchesStored = !$order->stripe_payment_intent_id || $order->stripe_payment_intent_id === $paymentIntentId;
 
+                $stripePaymentStatus = $paymentIntent->status;
+
                 if ($paymentIntent->status === 'succeeded' && $amountMatches && $intentMatchesOrder && $intentMatchesStored) {
                     $paymentVerified = true;
+                    
+                    // If order is still pending but payment succeeded, update it
+                    if ($order->status === 'pending') {
+                        Log::info('Updating order status from pending to completed (payment verified)', [
+                            'order_id' => $order->id,
+                            'payment_intent_id' => $paymentIntentId,
+                        ]);
+                        
+                        $order->update([
+                            'status' => 'completed',
+                            'stripe_payment_intent_id' => $paymentIntentId,
+                        ]);
+                        
+                        // Reload order to get fresh data
+                        $order->refresh();
+                        
+                        // Increment product sales count
+                        $order->load('items.product');
+                        foreach ($order->items as $item) {
+                            if ($item->product) {
+                                $item->product->increment('sales_count');
+                            }
+                        }
+                    }
                 }
             } catch (\Exception $e) {
                 Log::warning('Payment intent verification failed', [
@@ -302,6 +360,7 @@ class OrderController extends Controller
         return Inertia::render('Orders/Show', [
             'order' => $order,
             'paymentSuccess' => $paymentVerified,
+            'stripePaymentStatus' => $stripePaymentStatus,
         ]);
     }
 }

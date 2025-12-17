@@ -42,6 +42,7 @@ interface Order {
 interface Props extends PageProps {
     order: Order;
     paymentSuccess?: boolean;
+    stripePaymentStatus?: string | null;
 }
 
 const statusColors: Record<string, string> = {
@@ -58,7 +59,7 @@ const statusLabels: Record<string, string> = {
     cancelled: 'キャンセル',
 };
 
-export default function Show({ order, paymentSuccess, emailSent, auth }: Props) {
+export default function Show({ order, paymentSuccess, emailSent, auth, stripePaymentStatus }: Props) {
     // Check if payment was successful from URL parameters
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -81,19 +82,30 @@ export default function Show({ order, paymentSuccess, emailSent, auth }: Props) 
         >
             <Head title={`注文詳細 #${order.order_number}`} />
 
-                   {paymentSuccess && (
+                   {(paymentSuccess || (stripePaymentStatus === 'succeeded' && order.status === 'pending')) && (
                        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                            <div className="mb-4 space-y-2">
-                               <div className="rounded-lg bg-green-50 p-4 text-green-800">
-                                   <p className="font-semibold">✓ 支払いが完了しました！</p>
-                               </div>
-                               {(emailSent || order.metadata?.email_sent || order.status === 'completed') && (
-                                   <div className="rounded-lg bg-blue-50 p-4 text-blue-800">
-                                       <p className="font-semibold">📧 注文確認メールを送信しました</p>
+                               {stripePaymentStatus === 'succeeded' && order.status === 'pending' ? (
+                                   <div className="rounded-lg bg-yellow-50 p-4 text-yellow-800">
+                                       <p className="font-semibold">⚠️ 支払いは完了していますが、注文状態の更新に時間がかかっています</p>
                                        <p className="text-sm mt-1">
-                                           {order.billing_address?.email || '登録メールアドレス'} に確認メールを送信しました。
+                                           ページをリロードすると、注文状態が自動的に更新されます。
                                        </p>
                                    </div>
+                               ) : (
+                                   <>
+                                       <div className="rounded-lg bg-green-50 p-4 text-green-800">
+                                           <p className="font-semibold">✓ 支払いが完了しました！</p>
+                                       </div>
+                                       {(emailSent || order.metadata?.email_sent || order.status === 'completed') && (
+                                           <div className="rounded-lg bg-blue-50 p-4 text-blue-800">
+                                               <p className="font-semibold">📧 注文確認メールを送信しました</p>
+                                               <p className="text-sm mt-1">
+                                                   {order.billing_address?.email || '登録メールアドレス'} に確認メールを送信しました。
+                                               </p>
+                                           </div>
+                                       )}
+                                   </>
                                )}
                            </div>
                        </div>

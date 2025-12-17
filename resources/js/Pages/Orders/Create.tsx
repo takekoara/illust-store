@@ -95,6 +95,30 @@ function CheckoutForm({ cartItems, total, clientSecret, tempOrderId }: { cartIte
             if (!orderResponse.ok) {
                 // 419などHTMLレスポンスの場合も安全に扱う
                 const contentType = orderResponse.headers.get('content-type') || '';
+                
+                // CSRFエラー（419）の場合、一時注文を削除
+                if (orderResponse.status === 419 && tempOrderId) {
+                    try {
+                        await fetch(route('orders.cancel-temp'), {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN':
+                                    document
+                                        .querySelector('meta[name="csrf-token"]')
+                                        ?.getAttribute('content') || '',
+                            },
+                            body: JSON.stringify({
+                                temp_order_id: tempOrderId,
+                            }),
+                        });
+                    } catch (cancelError) {
+                        console.error('Failed to cancel temp order:', cancelError);
+                    }
+                }
+                
                 if (contentType.includes('application/json')) {
                     const errorData = await orderResponse.json();
                     setError(errorData.message || '注文の作成に失敗しました。');
@@ -241,6 +265,31 @@ function CheckoutForm({ cartItems, total, clientSecret, tempOrderId }: { cartIte
             {clientSecret && (
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold">支払い情報</h3>
+                    
+                    {/* テストカード情報 */}
+                    <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                        <p className="text-sm font-semibold text-blue-800 mb-2">
+                            💳 テスト用カード情報（デモサイト用）
+                        </p>
+                        <div className="space-y-1 text-sm text-blue-700">
+                            <div>
+                                <strong>成功:</strong>{' '}
+                                <code className="bg-blue-100 px-2 py-1 rounded text-xs">4242 4242 4242 4242</code>
+                            </div>
+                            <div>
+                                <strong>3Dセキュア認証:</strong>{' '}
+                                <code className="bg-blue-100 px-2 py-1 rounded text-xs">4000 0025 0000 3155</code>
+                            </div>
+                            <div>
+                                <strong>失敗:</strong>{' '}
+                                <code className="bg-blue-100 px-2 py-1 rounded text-xs">4000 0000 0000 0002</code>
+                            </div>
+                            <div className="mt-2 text-xs text-blue-600">
+                                有効期限: 任意の未来の日付（例: 12/34） | CVC: 任意の3桁（例: 123）
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div className="rounded-lg border p-4">
                         <PaymentElement />
                     </div>
