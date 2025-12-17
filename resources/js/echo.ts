@@ -10,6 +10,15 @@ declare global {
 
 window.Pusher = Pusher;
 
+// Pusher.jsのログレベルを設定（本番環境ではエラーを抑制）
+if (import.meta.env.PROD) {
+    // 本番環境では、Pusher.jsのログを抑制
+    Pusher.logToConsole = false;
+} else {
+    // 開発環境では、ログを有効化
+    Pusher.logToConsole = true;
+}
+
 // Reverbサーバーが起動していない場合でもエラーを表示しない
 const reverbConfig: any = {
     broadcaster: 'reverb',
@@ -28,6 +37,10 @@ const reverbConfig: any = {
     // 接続失敗時のリトライ設定
     enabled: true,
     disableStats: true,
+    // 本番環境では接続エラーを抑制
+    cluster: undefined,
+    // 接続タイムアウトを短く設定（本番環境でサーバーが起動していない場合の検出を早くする）
+    activityTimeout: import.meta.env.PROD ? 30000 : 120000,
 };
 
 // 環境変数が設定されていない場合（本番環境でReverbが動作しない場合）は接続を無効化
@@ -35,26 +48,59 @@ const isReverbConfigured = import.meta.env.VITE_REVERB_APP_KEY &&
                             import.meta.env.VITE_REVERB_APP_KEY !== 'your-app-key';
 
 if (isReverbConfigured) {
-    window.Echo = new Echo<any>(reverbConfig);
-    
-    // デバッグ用: Echo接続状態をログに記録（開発環境のみ、かつEchoオブジェクトが存在する場合のみ）
-    if (import.meta.env.DEV && window.Echo?.connector?.pusher?.connection) {
-        window.Echo.connector.pusher.connection.bind('connected', () => {
-            console.log('✅ Echo connected to Reverb');
-        });
-
-        window.Echo.connector.pusher.connection.bind('disconnected', () => {
-            console.log('❌ Echo disconnected from Reverb');
-        });
-
-        window.Echo.connector.pusher.connection.bind('error', (error: any) => {
-            // Reverbサーバーが起動していない場合は警告のみ（エラーを表示しない）
-            if (error?.error?.data?.code === 1006 || error?.type === 'TransportError') {
-                console.warn('⚠️ Reverb server is not running. Real-time features will not work.');
-            } else {
-                console.error('❌ Echo connection error:', error);
+    try {
+        window.Echo = new Echo<any>(reverbConfig);
+        
+        // 接続エラーを抑制（本番環境ではエラーを表示しない）
+        if (window.Echo?.connector?.pusher?.connection) {
+            // 接続エラーを抑制（本番環境ではコンソールに表示しない）
+            window.Echo.connector.pusher.connection.bind('error', (error: any) => {
+                // 開発環境でのみ警告を表示
+                if (import.meta.env.DEV) {
+                    if (error?.error?.data?.code === 1006 || error?.type === 'TransportError') {
+                        console.warn('⚠️ Reverb server is not running. Real-time features will not work.');
+                    } else {
+                        console.error('❌ Echo connection error:', error);
+                    }
+                }
+                // 本番環境ではエラーを表示しない（ユーザーに影響を与えない）
+            });
+            
+            // 接続失敗時のエラーを抑制（本番環境）
+            if (import.meta.env.PROD) {
+                // 本番環境では、接続エラーを無視
+                window.Echo.connector.pusher.connection.bind('state_change', (states: any) => {
+                    // 接続状態の変更を監視（エラー時は何もしない）
+                });
             }
-        });
+            
+            // デバッグ用: Echo接続状態をログに記録（開発環境のみ）
+            if (import.meta.env.DEV) {
+                window.Echo.connector.pusher.connection.bind('connected', () => {
+                    console.log('✅ Echo connected to Reverb');
+                });
+
+                window.Echo.connector.pusher.connection.bind('disconnected', () => {
+                    console.log('❌ Echo disconnected from Reverb');
+                });
+            }
+        }
+    } catch (error) {
+        // Echoオブジェクトの作成に失敗した場合、ダミーオブジェクトを使用
+        if (import.meta.env.DEV) {
+            console.warn('Failed to initialize Echo, using dummy object:', error);
+        }
+        const dummyChannel = {
+            listen: () => {},
+            stopListening: () => {},
+            error: () => {},
+        };
+        window.Echo = {
+            private: () => dummyChannel,
+            channel: () => dummyChannel,
+            leave: () => {},
+            disconnect: () => {},
+        } as any;
     }
 } else {
     // Reverbが設定されていない場合はダミーのEchoオブジェクトを作成
