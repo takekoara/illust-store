@@ -97,11 +97,11 @@ export default function Index({ products, filters, auth }: Props) {
                                             </h3>
                                             <div className="mb-2 flex items-center gap-2">
                                                 <img
-                                                    src={product.user.avatar_type ? `/images/avatars/${product.user.avatar_type}.png` : '/default-avatar.png'}
+                                                    src={product.user.avatar_type ? `/images/avatars/${product.user.avatar_type}.png` : '/images/default-avatar.png'}
                                                     alt={product.user.name}
                                                     className="h-6 w-6 rounded-full"
                                                     onError={(e) => {
-                                                        (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                                        (e.target as HTMLImageElement).src = '/images/default-avatar.png';
                                                     }}
                                                 />
                                                 <span className="text-sm text-gray-600">
