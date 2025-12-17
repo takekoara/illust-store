@@ -24,7 +24,7 @@ This request has been blocked; the content must be served over HTTPS.
 
 ## 解決方法
 
-### ステップ1: APP_URLをHTTPSに設定
+### ステップ1: APP_URLをHTTPSに設定（最重要・必須）
 
 Renderダッシュボードの環境変数で：
 
@@ -32,29 +32,35 @@ Renderダッシュボードの環境変数で：
 APP_URL=https://illust-store.onrender.com
 ```
 
-**重要**: `http://`ではなく`https://`を使用してください。
+**重要**: 
+- `http://`ではなく`https://`を使用してください
+- これが最も重要な設定です
+- `APP_URL`がHTTPの場合、アセットもHTTPで生成されます
+- **これだけでMixed Contentエラーは解決します**
 
-### ステップ2: ASSET_URLを設定（オプション）
+### ステップ2: vite.config.jsは変更不要
 
-アセットURLを明示的に設定する場合：
+**重要**: `vite.config.js`は変更しないでください。シンプルな状態のままにしてください：
 
-```env
-ASSET_URL=https://illust-store.onrender.com
+```javascript
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: 'resources/js/app.tsx',
+            refresh: true,
+        }),
+        react(),
+    ],
+});
 ```
 
-### ステップ3: キャッシュをクリア
+`server`や`build`設定を追加すると、500エラーが発生する可能性があります。
 
-環境変数を変更したら、キャッシュをクリア：
-
-```bash
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
-```
-
-Dockerfileの起動コマンドには`php artisan optimize`が含まれているため、再デプロイ時に自動的にキャッシュがクリアされます。
-
-### ステップ4: 再デプロイ
+### ステップ3: 再デプロイ
 
 環境変数を設定したら、サービスを再デプロイしてください。
 
