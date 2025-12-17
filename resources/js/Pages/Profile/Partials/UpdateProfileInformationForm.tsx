@@ -18,14 +18,22 @@ export default function UpdateProfileInformation({
     const user = usePage().props.auth.user;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } =
-        useForm({
+        useForm<{
+            name: string;
+            username: string;
+            email: string;
+            bio: string;
+            avatar_type: string;
+            website: string;
+            location: string;
+        }>({
             name: user.name,
             username: user.username || '',
             email: user.email,
             bio: user.bio || '',
             avatar_type: user.avatar_type || '',
-            website: user.website || '',
-            location: user.location || '',
+            website: (user as any).website || '',
+            location: (user as any).location || '',
         });
 
     const submit: FormEventHandler = (e) => {

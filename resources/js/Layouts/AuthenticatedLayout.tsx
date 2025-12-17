@@ -107,7 +107,7 @@ export default function Authenticated({
                                 </div>
                                 
                                 {/* 通知（右側に配置） */}
-                                <div className="relative inline-flex items-center">
+                                <div className="relative inline-flex items-center space-x-4">
                                     <NavLink
                                         href={route('notifications.index')}
                                         active={route().current('notifications.*')}
@@ -119,6 +119,12 @@ export default function Authenticated({
                                             {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
                                         </span>
                                     )}
+                                    <NavLink
+                                        href={route('about')}
+                                        active={route().current('about')}
+                                    >
+                                        サイトについて
+                                    </NavLink>
                                 </div>
                             </div>
                         </div>
@@ -287,6 +293,14 @@ export default function Authenticated({
                                 </span>
                             )}
                         </div>
+                        
+                        {/* サイトについて */}
+                        <ResponsiveNavLink
+                            href={route('about')}
+                            active={route().current('about')}
+                        >
+                            サイトについて
+                        </ResponsiveNavLink>
                         
                         {/* 管理者機能 */}
                         {user?.is_admin && (

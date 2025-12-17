@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index'])->name('welcome');
 
+// About page (public)
+Route::get('/about', [App\Http\Controllers\AboutController::class, 'index'])->name('about');
+
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

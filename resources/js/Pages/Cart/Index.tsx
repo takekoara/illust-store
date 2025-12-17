@@ -29,7 +29,7 @@ interface Props extends PageProps {
 }
 
 export default function Index({ cartItems, total, auth }: Props) {
-    const { delete: destroy, processing } = useForm();
+    const { delete: destroy, processing } = useForm({});
 
     const handleRemove = (cartItemId: number) => {
         destroy(route('cart.destroy', cartItemId), {

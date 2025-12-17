@@ -244,8 +244,16 @@ export default function Welcome({
             {/* フッター */}
             <footer className="bg-gray-900 text-white py-12">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="text-center">
-                        <p className="text-gray-400">
+                    <div className="flex flex-col items-center space-y-4">
+                        <div className="flex space-x-6">
+                            <Link
+                                href={route('about')}
+                                className="text-gray-400 hover:text-white transition-colors duration-200"
+                            >
+                                サイトについて
+                            </Link>
+                        </div>
+                        <p className="text-gray-400 text-sm">
                             © 2025 イラストストア. All rights reserved.
                         </p>
                     </div>

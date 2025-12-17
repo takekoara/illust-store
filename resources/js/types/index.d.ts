@@ -6,6 +6,8 @@ export interface User {
     email_verified_at?: string;
     avatar_type?: string | null;
     bio?: string | null;
+    website?: string | null;
+    location?: string | null;
     is_admin?: boolean;
 }
 

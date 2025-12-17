@@ -7,6 +7,7 @@ interface User {
     name: string;
     username: string;
     avatar: string | null;
+    avatar_type?: string | null;
     bio: string | null;
 }
 

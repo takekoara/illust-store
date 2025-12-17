@@ -4,14 +4,14 @@ import Pusher from 'pusher-js';
 declare global {
     interface Window {
         Pusher: typeof Pusher;
-        Echo: Echo;
+        Echo: Echo<any>;
     }
 }
 
 window.Pusher = Pusher;
 
 // Reverbサーバーが起動していない場合でもエラーを表示しない
-const reverbConfig = {
+const reverbConfig: any = {
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY || 'your-app-key',
     wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
@@ -30,7 +30,7 @@ const reverbConfig = {
     disableStats: true,
 };
 
-window.Echo = new Echo(reverbConfig);
+window.Echo = new Echo<any>(reverbConfig);
 
 // デバッグ用: Echo接続状態をログに記録（開発環境のみ）
 if (import.meta.env.DEV) {
