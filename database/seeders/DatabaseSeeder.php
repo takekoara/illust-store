@@ -21,5 +21,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // 本番用商品シーダーを実行（コメントアウトを外すと実行されます）
+        // $this->call(ProductionProductSeeder::class);
     }
 }
