@@ -38,15 +38,14 @@ if (isReverbConfigured) {
     window.Echo = new Echo<any>(reverbConfig);
 } else {
     // Reverbが設定されていない場合はダミーのEchoオブジェクトを作成
+    const dummyChannel = {
+        listen: () => {},
+        stopListening: () => {},
+        error: () => {},
+    };
     window.Echo = {
-        private: () => ({
-            listen: () => {},
-            stopListening: () => {},
-        }),
-        channel: () => ({
-            listen: () => {},
-            stopListening: () => {},
-        }),
+        private: () => dummyChannel,
+        channel: () => dummyChannel,
         leave: () => {},
         disconnect: () => {},
     } as any;

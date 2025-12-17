@@ -46,11 +46,14 @@ class OrderController extends Controller
      */
     public function create(): Response|RedirectResponse
     {
+        Log::info('Order create method called', ['user_id' => Auth::id()]);
+
         $cartItems = CartItem::with(['product.images', 'product.user'])
             ->where('user_id', Auth::id())
             ->get();
 
         if ($cartItems->isEmpty()) {
+            Log::warning('Cart is empty', ['user_id' => Auth::id()]);
             return redirect()->route('cart.index')
                 ->with('error', 'カートが空です。');
         }
@@ -61,6 +64,10 @@ class OrderController extends Controller
         });
 
         if ($invalidItems->isNotEmpty()) {
+            Log::warning('Invalid items in cart', [
+                'user_id' => Auth::id(),
+                'invalid_items' => $invalidItems->pluck('id')->toArray(),
+            ]);
             return redirect()->route('cart.index')
                 ->with('error', 'カートに無効な商品が含まれています。カートを確認してください。');
         }
@@ -69,24 +76,46 @@ class OrderController extends Controller
             return $item->product->price;
         });
 
+        Log::info('Cart total calculated', ['user_id' => Auth::id(), 'total' => $total]);
+
         if ($total <= 0) {
+            Log::warning('Invalid total amount', ['user_id' => Auth::id(), 'total' => $total]);
             return redirect()->route('cart.index')
                 ->with('error', '注文金額が無効です。商品を確認してください。');
         }
 
         // Create a temporary order to generate payment intent
-        $tempOrder = Order::create([
-            'user_id' => Auth::id(),
-            'total_amount' => $total,
-            'status' => 'pending',
-            'billing_address' => [],
-        ]);
+        try {
+            $tempOrder = Order::create([
+                'user_id' => Auth::id(),
+                'total_amount' => $total,
+                'status' => 'pending',
+                'billing_address' => [],
+            ]);
+            Log::info('Temporary order created', ['order_id' => $tempOrder->id, 'user_id' => Auth::id()]);
+        } catch (\Exception $e) {
+            Log::error('Failed to create temporary order', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->route('cart.index')
+                ->with('error', '注文の作成に失敗しました。しばらくしてから再度お試しください。');
+        }
 
         // Check if Stripe is configured
         $stripeSecret = config('services.stripe.secret');
+        Log::info('Stripe configuration check', [
+            'order_id' => $tempOrder->id,
+            'stripe_secret_set' => !empty($stripeSecret),
+            'stripe_secret_length' => $stripeSecret ? strlen($stripeSecret) : 0,
+        ]);
+
         if (empty($stripeSecret)) {
             Log::error('Stripe secret key is not configured', [
                 'order_id' => $tempOrder->id,
+                'user_id' => Auth::id(),
+                'config_services_stripe' => config('services.stripe'),
             ]);
             $tempOrder->delete();
             $errorMessage = config('app.debug')
@@ -99,6 +128,12 @@ class OrderController extends Controller
         // Create payment intent
         $clientSecret = null;
         try {
+            Log::info('Attempting to create Stripe Payment Intent', [
+                'order_id' => $tempOrder->id,
+                'amount' => (int)($total * 100),
+                'currency' => 'jpy',
+            ]);
+
             Stripe::setApiKey($stripeSecret);
             $paymentIntent = PaymentIntent::create([
                 'amount' => (int)($total * 100), // Convert to cents
@@ -110,6 +145,11 @@ class OrderController extends Controller
                 ],
             ]);
 
+            Log::info('Stripe Payment Intent created successfully', [
+                'order_id' => $tempOrder->id,
+                'payment_intent_id' => $paymentIntent->id,
+            ]);
+
             $tempOrder->update([
                 'stripe_payment_intent_id' => $paymentIntent->id,
             ]);
@@ -118,6 +158,7 @@ class OrderController extends Controller
         } catch (\Stripe\Exception\ApiErrorException $e) {
             Log::error('Stripe Payment Intent API Error in create', [
                 'order_id' => $tempOrder->id,
+                'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
                 'stripe_error_code' => $e->getStripeCode(),
                 'stripe_error_type' => $e->getStripeCode(),
@@ -132,7 +173,9 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             Log::error('Stripe Payment Intent Error in create', [
                 'order_id' => $tempOrder->id,
+                'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
+                'error_class' => get_class($e),
                 'trace' => config('app.debug') ? $e->getTraceAsString() : null,
             ]);
             // Delete temp order if payment intent creation failed
