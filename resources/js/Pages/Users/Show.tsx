@@ -102,7 +102,7 @@ export default function Show({ user, products, isFollowing: initialIsFollowing, 
                         {user.cover_image && (
                             <div className="h-48 w-full overflow-hidden bg-gray-200">
                                 <img
-                                    src={`/storage/${user.cover_image}`}
+                                    src={`/images/${user.cover_image}`}
                                     alt="Cover"
                                     className="h-full w-full object-cover"
                                 />

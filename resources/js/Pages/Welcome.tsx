@@ -120,7 +120,7 @@ export default function Welcome({
                                         {primaryImage ? (
                                             <div className="aspect-square overflow-hidden bg-gray-100">
                                                 <img
-                                                    src={`/storage/${primaryImage.image_path}`}
+                                                    src={`/images/${primaryImage.image_path}`}
                                                     alt={product.title}
                                                     className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
                                                 />
@@ -176,7 +176,7 @@ export default function Welcome({
                                         {primaryImage ? (
                                             <div className="aspect-square overflow-hidden bg-gray-100">
                                                 <img
-                                                    src={`/storage/${primaryImage.image_path}`}
+                                                    src={`/images/${primaryImage.image_path}`}
                                                     alt={product.title}
                                                     className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
                                                 />

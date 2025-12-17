@@ -30,7 +30,27 @@ const reverbConfig: any = {
     disableStats: true,
 };
 
-window.Echo = new Echo<any>(reverbConfig);
+// 環境変数が設定されていない場合（本番環境でReverbが動作しない場合）は接続を無効化
+const isReverbConfigured = import.meta.env.VITE_REVERB_APP_KEY && 
+                            import.meta.env.VITE_REVERB_APP_KEY !== 'your-app-key';
+
+if (isReverbConfigured) {
+    window.Echo = new Echo<any>(reverbConfig);
+} else {
+    // Reverbが設定されていない場合はダミーのEchoオブジェクトを作成
+    window.Echo = {
+        private: () => ({
+            listen: () => {},
+            stopListening: () => {},
+        }),
+        channel: () => ({
+            listen: () => {},
+            stopListening: () => {},
+        }),
+        leave: () => {},
+        disconnect: () => {},
+    } as any;
+}
 
 // デバッグ用: Echo接続状態をログに記録（開発環境のみ）
 if (import.meta.env.DEV) {

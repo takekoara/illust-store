@@ -205,7 +205,7 @@ export default function Dashboard({ stats, isAdmin, auth, bookmarks = [] }: Prop
                                                     product.images?.find((img) => img.is_primary) ||
                                                     product.images?.[0];
                                                 const imageUrl = primaryImage
-                                                    ? `/storage/${primaryImage.image_path}`
+                                                    ? `/images/${primaryImage.image_path}`
                                                     : '/placeholder-image.jpg';
 
                                                 return (
@@ -416,7 +416,7 @@ export default function Dashboard({ stats, isAdmin, auth, bookmarks = [] }: Prop
                                                     product.images?.find((img) => img.is_primary) ||
                                                     product.images?.[0];
                                                 const imageUrl = primaryImage
-                                                    ? `/storage/${primaryImage.image_path}`
+                                                    ? `/images/${primaryImage.image_path}`
                                                     : '/placeholder-image.jpg';
 
                                                 return (
