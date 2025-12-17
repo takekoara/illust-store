@@ -8,7 +8,6 @@ use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Faker\Factory as Faker;
 
 class ProductionProductSeeder extends Seeder
 {
@@ -17,7 +16,6 @@ class ProductionProductSeeder extends Seeder
      */
     public function run(): void
     {
-        $faker = Faker::create('ja_JP');
         // 既に商品が存在する場合はスキップ（重複を防ぐ）
         if (Product::count() > 0) {
             if ($this->command) {
@@ -109,13 +107,15 @@ class ProductionProductSeeder extends Seeder
                 'price' => $price,
                 'is_active' => true,
                 'sort_order' => $i,
-                'views' => $faker->numberBetween(0, 1000),
-                'sales_count' => $faker->numberBetween(0, 50),
+                'views' => random_int(0, 1000),
+                'sales_count' => random_int(0, 50),
             ]);
 
             // 1～6個の画像をランダムに選択
-            $imageCount = $faker->numberBetween(1, 6);
-            $selectedImages = $faker->randomElements($availableImages, min($imageCount, count($availableImages)));
+            $imageCount = random_int(1, min(6, count($availableImages)));
+            $selectedImageKeys = array_rand($availableImages, $imageCount);
+            $selectedImageKeys = is_array($selectedImageKeys) ? $selectedImageKeys : [$selectedImageKeys];
+            $selectedImages = array_map(fn($key) => $availableImages[$key], $selectedImageKeys);
 
             // 画像を追加
             foreach ($selectedImages as $index => $imagePath) {
@@ -128,7 +128,10 @@ class ProductionProductSeeder extends Seeder
             }
 
             // タグをランダムに付与（1～5個）
-            $productTags = $faker->randomElements($tags, $faker->numberBetween(1, 5));
+            $tagCount = random_int(1, min(5, count($tags)));
+            $selectedTagKeys = array_rand($tags, $tagCount);
+            $selectedTagKeys = is_array($selectedTagKeys) ? $selectedTagKeys : [$selectedTagKeys];
+            $productTags = array_map(fn($key) => $tags[$key], $selectedTagKeys);
             $product->tags()->attach(collect($productTags)->pluck('id'));
 
             if ($this->command) {
