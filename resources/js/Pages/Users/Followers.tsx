@@ -60,12 +60,12 @@ export default function Followers({ user, followers, auth }: Props) {
                                                 src={
                                                     follower.avatar_type
                                                         ? `/images/avatars/${follower.avatar_type}.png`
-                                                        : '/default-avatar.png'
+                                                        : '/images/avatars/default-avatar.png'
                                                 }
                                                 alt={follower.name}
                                                 className="h-12 w-12 rounded-full"
                                                 onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                                    (e.target as HTMLImageElement).src = '/images/avatars/default-avatar.png';
                                                 }}
                                             />
                                             <div className="flex-1">

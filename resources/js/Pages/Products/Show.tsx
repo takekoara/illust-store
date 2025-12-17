@@ -249,11 +249,11 @@ export default function Show({ product, relatedProducts, auth, isLiked: initialI
                         <div>
                             <div className="mb-4 flex items-center gap-3">
                                 <img
-                                    src={product.user.avatar_type ? `/images/avatars/${product.user.avatar_type}.png` : '/images/default-avatar.png'}
+                                    src={product.user.avatar_type ? `/images/avatars/${product.user.avatar_type}.png` : '/images/avatars/default-avatar.png'}
                                     alt={product.user.name}
                                     className="h-12 w-12 rounded-full"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = '/images/default-avatar.png';
+                                        (e.target as HTMLImageElement).src = '/images/avatars/default-avatar.png';
                                     }}
                                 />
                                 <div>

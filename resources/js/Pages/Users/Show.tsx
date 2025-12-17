@@ -116,12 +116,12 @@ export default function Show({ user, products, isFollowing: initialIsFollowing, 
                                     src={
                                         user.avatar_type
                                             ? `/images/avatars/${user.avatar_type}.png`
-                                            : '/default-avatar.png'
+                                            : '/images/avatars/default-avatar.png'
                                     }
                                     alt={user.name}
                                     className="h-24 w-24 rounded-full border-4 border-white shadow-lg"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                        (e.target as HTMLImageElement).src = '/images/avatars/default-avatar.png';
                                     }}
                                 />
 
@@ -217,7 +217,7 @@ export default function Show({ user, products, isFollowing: initialIsFollowing, 
                                         product.images?.find((img) => img.is_primary) ||
                                         product.images?.[0];
                                     const imageUrl = primaryImage
-                                        ? `/storage/${primaryImage.image_path}`
+                                        ? `/images/${primaryImage.image_path}`
                                         : '/placeholder-image.jpg';
 
                                     return (

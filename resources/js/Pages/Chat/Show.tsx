@@ -172,12 +172,12 @@ export default function Show({ conversation, otherUser, messages: initialMessage
                         src={
                             otherUser.avatar_type
                                 ? `/images/avatars/${otherUser.avatar_type}.png`
-                                : '/default-avatar.png'
+                                : '/images/avatars/default-avatar.png'
                         }
                         alt={otherUser.name}
                         className="h-8 w-8 rounded-full"
                         onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/default-avatar.png';
+                            (e.target as HTMLImageElement).src = '/images/avatars/default-avatar.png';
                         }}
                     />
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
@@ -195,7 +195,7 @@ export default function Show({ conversation, otherUser, messages: initialMessage
                         <div className="mx-auto flex max-w-4xl items-center gap-4">
                             {conversation.product.images && conversation.product.images.length > 0 && (
                                 <img
-                                    src={`/storage/${
+                                    src={`/images/${
                                         conversation.product.images.find((img) => img.is_primary)?.image_path ||
                                         conversation.product.images[0].image_path
                                     }`}

@@ -123,7 +123,7 @@ export default function Index({ query, type, results, auth }: Props) {
                                             product.images?.find((img) => img.is_primary) ||
                                             product.images?.[0];
                                         const imageUrl = primaryImage
-                                            ? `/storage/${primaryImage.image_path}`
+                                            ? `/images/${primaryImage.image_path}`
                                             : '/placeholder-image.jpg';
 
                                         return (
@@ -169,12 +169,12 @@ export default function Index({ query, type, results, auth }: Props) {
                                                 src={
                                                     user.avatar_type
                                                         ? `/images/avatars/${user.avatar_type}.png`
-                                                        : '/default-avatar.png'
+                                                        : '/images/avatars/default-avatar.png'
                                                 }
                                                 alt={user.name}
                                                 className="h-12 w-12 rounded-full"
                                                 onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                                    (e.target as HTMLImageElement).src = '/images/avatars/default-avatar.png';
                                                 }}
                                             />
                                             <div>

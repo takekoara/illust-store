@@ -95,7 +95,7 @@ export default function Index({ bookmarks, auth }: Props) {
                                         bookmark.product.images?.find((img) => img.is_primary) ||
                                         bookmark.product.images?.[0];
                                     const imageUrl = primaryImage
-                                        ? `/storage/${primaryImage.image_path}`
+                                        ? `/images/${primaryImage.image_path}`
                                         : '/placeholder-image.jpg';
 
                                     return (
@@ -124,12 +124,12 @@ export default function Index({ bookmarks, auth }: Props) {
                                                             src={
                                                                 bookmark.product.user.avatar_type
                                                                     ? `/images/avatars/${bookmark.product.user.avatar_type}.png`
-                                                                    : '/default-avatar.png'
+                                                                    : '/images/avatars/default-avatar.png'
                                                             }
                                                             alt={bookmark.product.user.name}
                                                             className="h-5 w-5 rounded-full"
                                                             onError={(e) => {
-                                                                (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                                                (e.target as HTMLImageElement).src = '/images/avatars/default-avatar.png';
                                                             }}
                                                         />
                                                         <p className="text-xs text-gray-500">

@@ -136,7 +136,7 @@ export default function UpdateProfileInformation({
                                     className="h-full w-full rounded-full object-cover"
                                     onError={(e) => {
                                         // 画像がまだない場合はプレースホルダーを表示
-                                        (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                        (e.target as HTMLImageElement).src = '/images/avatars/default-avatar.png';
                                     }}
                                 />
                                 {data.avatar_type === avatarType && (

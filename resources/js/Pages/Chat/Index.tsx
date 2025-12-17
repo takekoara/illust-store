@@ -65,12 +65,12 @@ export default function Index({ conversations, auth }: Props) {
                                                 src={
                                                     conversation.other_user.avatar_type
                                                         ? `/images/avatars/${conversation.other_user.avatar_type}.png`
-                                                        : '/default-avatar.png'
+                                                        : '/images/avatars/default-avatar.png'
                                                 }
                                                 alt={conversation.other_user.name}
                                                 className="h-12 w-12 rounded-full"
                                                 onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                                    (e.target as HTMLImageElement).src = '/images/avatars/default-avatar.png';
                                                 }}
                                             />
                                             <div className="flex-1">
