@@ -39,6 +39,20 @@ NPM_CMD=$(which npm || echo npm) && $NPM_CMD ci && $NPM_CMD run build
 PHP_CMD=$(which php || echo php) && $PHP_CMD artisan ...
 ```
 
+### 問題4: `nuxt: Permission denied` または `command not found`（Node.jsコマンド）
+
+**原因**: `node_modules`がインストールされていない、または実行権限がない
+
+**解決方法**: 
+1. `npm ci`または`npm install`がBuild Commandに含まれているか確認
+2. 現在のBuild Commandには`npm ci`が含まれているため、通常は問題ありません
+3. もしエラーが出る場合、Build Commandを確認：
+   ```bash
+   npm ci && npm run build
+   ```
+
+**注意**: `git clone`したリポジトリでは、`node_modules`は`.gitignore`に含まれているため、必ず`npm install`または`npm ci`を実行する必要があります。
+
 ---
 
 ## 環境変数の追加（オプション）
