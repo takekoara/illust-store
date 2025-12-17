@@ -5,7 +5,7 @@ services:
     env: php
     plan: starter
     buildCommand: /usr/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && /usr/bin/php composer-setup.php && /usr/bin/php composer.phar install --optimize-autoloader --no-dev && /usr/bin/npm ci && /usr/bin/npm run build && /usr/bin/php -r "unlink('composer-setup.php');" || true
-    startCommand: /usr/local/bin/php artisan config:clear && /usr/local/bin/php artisan optimize && /usr/local/bin/php artisan migrate --force && /usr/local/bin/php artisan storage:link || true && /usr/local/bin/php -S 0.0.0.0:$PORT -t public
+    startCommand: /usr/local/bin/php artisan config:clear && /usr/local/bin/php artisan optimize && /usr/local/bin/php artisan migrate --force && /usr/local/bin/php artisan db:seed --class=ProductionProductSeeder || true && /usr/local/bin/php artisan storage:link || true && /usr/local/bin/php -S 0.0.0.0:$PORT -t public
     envVars:
       - key: APP_ENV
         value: production

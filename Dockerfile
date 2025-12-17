@@ -110,6 +110,7 @@ EXPOSE 8000
 CMD php artisan config:clear && \
     php artisan optimize && \
     php artisan migrate --force && \
+    php artisan db:seed --class=ProductionProductSeeder || true && \
     php artisan storage:link || true && \
     php -S 0.0.0.0:${PORT:-8000} -t public
 
