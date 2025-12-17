@@ -75,7 +75,7 @@ export default function Index({ products, filters, auth }: Props) {
                             {products.data.map((product) => {
                                 const primaryImage = product.images.find(img => img.is_primary) || product.images[0];
                                 const imageUrl = primaryImage 
-                                    ? `/storage/${primaryImage.image_path}` 
+                                    ? `/images/${primaryImage.image_path}` 
                                     : '/placeholder-image.jpg';
 
                                 return (

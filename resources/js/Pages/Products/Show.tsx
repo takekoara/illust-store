@@ -100,7 +100,7 @@ export default function Show({ product, relatedProducts, auth, isLiked: initialI
     };
 
     const selectedImage = product.images[selectedImageIndex] || product.images[0];
-    const imageUrl = selectedImage ? `/storage/${selectedImage.image_path}` : '/placeholder-image.jpg';
+    const imageUrl = selectedImage ? `/images/${selectedImage.image_path}` : '/placeholder-image.jpg';
 
     // マウス移動でサムネイル表示/非表示
     useEffect(() => {
@@ -231,7 +231,7 @@ export default function Show({ product, relatedProducts, auth, isLiked: initialI
                                     {product.images.map((image, index) => (
                                         <img
                                             key={image.id}
-                                            src={`/storage/${image.image_path}`}
+                                            src={`/images/${image.image_path}`}
                                             alt={product.title}
                                             onClick={() => setSelectedImageIndex(index)}
                                             className={`aspect-square cursor-pointer rounded-lg object-cover transition-all hover:opacity-75 ${
@@ -381,7 +381,7 @@ export default function Show({ product, relatedProducts, auth, isLiked: initialI
                                 {relatedProducts.map((related) => {
                                     const relatedImage = related.images.find(img => img.is_primary) || related.images[0];
                                     const relatedImageUrl = relatedImage 
-                                        ? `/storage/${relatedImage.image_path}` 
+                                        ? `/images/${relatedImage.image_path}` 
                                         : '/placeholder-image.jpg';
 
                                     return (
@@ -450,7 +450,7 @@ export default function Show({ product, relatedProducts, auth, isLiked: initialI
                                         }`}
                                     >
                                         <img
-                                            src={`/storage/${image.image_path}`}
+                                            src={`/images/${image.image_path}`}
                                             alt={product.title}
                                             className="h-full w-full object-cover"
                                         />
