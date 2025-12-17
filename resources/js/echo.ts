@@ -53,28 +53,32 @@ if (isReverbConfigured) {
         
         // 接続エラーを抑制（本番環境ではエラーを表示しない）
         if (window.Echo?.connector?.pusher?.connection) {
-            // 接続エラーを抑制（本番環境ではコンソールに表示しない）
+            // 接続エラーのハンドリング
             window.Echo.connector.pusher.connection.bind('error', (error: any) => {
-                // 開発環境でのみ警告を表示
+                // 開発環境では詳細なエラーを表示
                 if (import.meta.env.DEV) {
                     if (error?.error?.data?.code === 1006 || error?.type === 'TransportError') {
                         console.warn('⚠️ Reverb server is not running. Real-time features will not work.');
+                        console.warn('Check if Reverb Worker service is running on Render.');
                     } else {
                         console.error('❌ Echo connection error:', error);
                     }
+                } else {
+                    // 本番環境では簡潔な警告のみ（デバッグ用）
+                    // 接続エラーは無視（ユーザーに影響を与えない）
+                    // 必要に応じて、接続状態を監視してリトライする処理を追加可能
                 }
-                // 本番環境ではエラーを表示しない（ユーザーに影響を与えない）
             });
             
-            // 接続失敗時のエラーを抑制（本番環境）
-            if (import.meta.env.PROD) {
-                // 本番環境では、接続エラーを無視
-                window.Echo.connector.pusher.connection.bind('state_change', (states: any) => {
-                    // 接続状態の変更を監視（エラー時は何もしない）
-                });
-            }
+            // 接続状態の監視
+            window.Echo.connector.pusher.connection.bind('state_change', (states: any) => {
+                // 開発環境でのみ接続状態をログに記録
+                if (import.meta.env.DEV) {
+                    console.log('Echo connection state:', states);
+                }
+            });
             
-            // デバッグ用: Echo接続状態をログに記録（開発環境のみ）
+            // 接続成功時のログ（開発環境のみ）
             if (import.meta.env.DEV) {
                 window.Echo.connector.pusher.connection.bind('connected', () => {
                     console.log('✅ Echo connected to Reverb');
