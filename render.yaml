@@ -4,7 +4,7 @@ services:
     name: illust-store
     env: php
     plan: starter
-    buildCommand: curl -sS https://getcomposer.org/installer | php && php composer.phar install --optimize-autoloader --no-dev && npm ci && npm run build
+    buildCommand: curl -sS https://getcomposer.org/installer | php && php composer.phar install --optimize-autoloader --no-dev && NPM_CMD=$(which npm || echo npm) && $NPM_CMD ci && $NPM_CMD run build
     startCommand: PHP_CMD=$(which php || echo php) && $PHP_CMD artisan optimize && $PHP_CMD artisan migrate --force && $PHP_CMD artisan storage:link || true && $PHP_CMD -S 0.0.0.0:$PORT -t public
     envVars:
       - key: APP_ENV
@@ -31,7 +31,7 @@ services:
     name: illust-store-queue
     env: php
     plan: starter
-    buildCommand: curl -sS https://getcomposer.org/installer | php && php composer.phar install --optimize-autoloader --no-dev && npm install && npm run build
+    buildCommand: curl -sS https://getcomposer.org/installer | php && php composer.phar install --optimize-autoloader --no-dev && NPM_CMD=$(which npm || echo npm) && $NPM_CMD install && $NPM_CMD run build
     startCommand: PHP_CMD=$(which php || echo php) && $PHP_CMD artisan queue:work --sleep=3 --tries=3 --max-time=3600
     envVars:
       - key: APP_ENV
@@ -50,7 +50,7 @@ services:
     name: illust-store-reverb
     env: php
     plan: starter
-    buildCommand: curl -sS https://getcomposer.org/installer | php && php composer.phar install --optimize-autoloader --no-dev && npm install && npm run build
+    buildCommand: curl -sS https://getcomposer.org/installer | php && php composer.phar install --optimize-autoloader --no-dev && NPM_CMD=$(which npm || echo npm) && $NPM_CMD install && $NPM_CMD run build
     startCommand: PHP_CMD=$(which php || echo php) && $PHP_CMD artisan reverb:start --host=0.0.0.0 --port=$PORT
     envVars:
       - key: APP_ENV
