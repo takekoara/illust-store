@@ -75,6 +75,8 @@ class ImageService
             IMAGETYPE_JPEG => imagecreatefromjpeg($filePath),
             IMAGETYPE_PNG => imagecreatefrompng($filePath),
             IMAGETYPE_GIF => imagecreatefromgif($filePath),
+            IMAGETYPE_AVIF => function_exists('imagecreatefromavif') ? imagecreatefromavif($filePath) : null,
+            IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? imagecreatefromwebp($filePath) : null,
             default => null,
         };
 
@@ -85,8 +87,8 @@ class ImageService
         // 新しい画像を作成
         $destination = imagecreatetruecolor($newWidth, $newHeight);
 
-        // PNGの透明度を保持
-        if ($type === IMAGETYPE_PNG) {
+        // PNG、AVIF、WebPの透明度を保持
+        if (in_array($type, [IMAGETYPE_PNG, IMAGETYPE_AVIF, IMAGETYPE_WEBP])) {
             imagealphablending($destination, false);
             imagesavealpha($destination, true);
             $transparent = imagecolorallocatealpha($destination, 255, 255, 255, 127);
@@ -102,7 +104,9 @@ class ImageService
             IMAGETYPE_JPEG => imagejpeg($destination, null, $quality),
             IMAGETYPE_PNG => imagepng($destination, null, (int)(9 - ($quality / 100) * 9)),
             IMAGETYPE_GIF => imagegif($destination),
-            default => null,
+            IMAGETYPE_AVIF => function_exists('imageavif') ? imageavif($destination, null, $quality) : imagejpeg($destination, null, $quality),
+            IMAGETYPE_WEBP => function_exists('imagewebp') ? imagewebp($destination, null, $quality) : imagejpeg($destination, null, $quality),
+            default => imagejpeg($destination, null, $quality),
         };
         $imageData = ob_get_clean();
 
@@ -133,6 +137,8 @@ class ImageService
             IMAGETYPE_JPEG => imagecreatefromjpeg($filePath),
             IMAGETYPE_PNG => imagecreatefrompng($filePath),
             IMAGETYPE_GIF => imagecreatefromgif($filePath),
+            IMAGETYPE_AVIF => function_exists('imagecreatefromavif') ? imagecreatefromavif($filePath) : null,
+            IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? imagecreatefromwebp($filePath) : null,
             default => null,
         };
 
@@ -148,8 +154,8 @@ class ImageService
         // 新しい画像を作成
         $destination = imagecreatetruecolor($width, $height);
 
-        // PNGの透明度を保持
-        if ($type === IMAGETYPE_PNG) {
+        // PNG、AVIF、WebPの透明度を保持
+        if (in_array($type, [IMAGETYPE_PNG, IMAGETYPE_AVIF, IMAGETYPE_WEBP])) {
             imagealphablending($destination, false);
             imagesavealpha($destination, true);
             $transparent = imagecolorallocatealpha($destination, 255, 255, 255, 127);
@@ -165,7 +171,9 @@ class ImageService
             IMAGETYPE_JPEG => imagejpeg($destination, null, $quality),
             IMAGETYPE_PNG => imagepng($destination, null, (int)(9 - ($quality / 100) * 9)),
             IMAGETYPE_GIF => imagegif($destination),
-            default => null,
+            IMAGETYPE_AVIF => function_exists('imageavif') ? imageavif($destination, null, $quality) : imagejpeg($destination, null, $quality),
+            IMAGETYPE_WEBP => function_exists('imagewebp') ? imagewebp($destination, null, $quality) : imagejpeg($destination, null, $quality),
+            default => imagejpeg($destination, null, $quality),
         };
         $imageData = ob_get_clean();
 

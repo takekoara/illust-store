@@ -26,7 +26,7 @@ class ProductStoreRequest extends FormRequest
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'images' => 'required|array|min:1',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:51200', // 50MB
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,avif,webp|max:51200', // 50MB
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
             'tag_names' => 'nullable|array',
@@ -50,7 +50,7 @@ class ProductStoreRequest extends FormRequest
             'images.required' => '画像は最低1枚必要です。',
             'images.min' => '画像は最低1枚必要です。',
             'images.*.image' => '画像ファイルをアップロードしてください。',
-            'images.*.mimes' => '画像はjpeg、png、jpg、gif形式のみ対応しています。',
+            'images.*.mimes' => '画像はjpeg、png、jpg、gif、avif、webp形式のみ対応しています。',
             'images.*.max' => '画像サイズは50MB以下にしてください。',
             'tags.*.exists' => '選択されたタグが無効です。',
             'tag_names.*.max' => 'タグ名は50文字以内で入力してください。',

@@ -27,7 +27,7 @@ class ProductUpdateRequest extends FormRequest
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:51200', // 50MB
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,avif,webp|max:51200', // 50MB
             'image_order' => 'nullable|array',
             'image_order.*' => 'integer|exists:product_images,id',
             'combined_order' => 'nullable|array',
@@ -55,7 +55,7 @@ class ProductUpdateRequest extends FormRequest
             'price.numeric' => '価格は数値で入力してください。',
             'price.min' => '価格は0以上で入力してください。',
             'images.*.image' => '画像ファイルをアップロードしてください。',
-            'images.*.mimes' => '画像はjpeg、png、jpg、gif形式のみ対応しています。',
+            'images.*.mimes' => '画像はjpeg、png、jpg、gif、avif、webp形式のみ対応しています。',
             'images.*.max' => '画像サイズは50MB以下にしてください。',
             'image_order.*.exists' => '選択された画像が無効です。',
             'combined_order.*.type.in' => '画像のタイプが無効です。',
