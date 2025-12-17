@@ -4,8 +4,8 @@ services:
     name: illust-store
     env: php
     plan: starter
-    buildCommand: /usr/local/bin/composer install --optimize-autoloader --no-dev && /usr/bin/npm ci && /usr/bin/npm run build
-    startCommand: /usr/bin/php artisan optimize && /usr/bin/php artisan migrate --force && /usr/bin/php artisan storage:link || true && /usr/bin/php -S 0.0.0.0:$PORT -t public
+    buildCommand: COMPOSER_CMD=$(which composer || echo composer) && NPM_CMD=$(which npm || echo npm) && $COMPOSER_CMD install --optimize-autoloader --no-dev && $NPM_CMD ci && $NPM_CMD run build
+    startCommand: PHP_CMD=$(which php || echo php) && $PHP_CMD artisan optimize && $PHP_CMD artisan migrate --force && $PHP_CMD artisan storage:link || true && $PHP_CMD -S 0.0.0.0:$PORT -t public
     envVars:
       - key: APP_ENV
         value: production
@@ -31,8 +31,8 @@ services:
     name: illust-store-queue
     env: php
     plan: starter
-    buildCommand: /usr/local/bin/composer install --optimize-autoloader --no-dev && /usr/bin/npm install && /usr/bin/npm run build
-    startCommand: /usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    buildCommand: COMPOSER_CMD=$(which composer || echo composer) && NPM_CMD=$(which npm || echo npm) && $COMPOSER_CMD install --optimize-autoloader --no-dev && $NPM_CMD install && $NPM_CMD run build
+    startCommand: PHP_CMD=$(which php || echo php) && $PHP_CMD artisan queue:work --sleep=3 --tries=3 --max-time=3600
     envVars:
       - key: APP_ENV
         value: production
@@ -50,8 +50,8 @@ services:
     name: illust-store-reverb
     env: php
     plan: starter
-    buildCommand: /usr/local/bin/composer install --optimize-autoloader --no-dev && /usr/bin/npm install && /usr/bin/npm run build
-    startCommand: /usr/bin/php artisan reverb:start --host=0.0.0.0 --port=$PORT
+    buildCommand: COMPOSER_CMD=$(which composer || echo composer) && NPM_CMD=$(which npm || echo npm) && $COMPOSER_CMD install --optimize-autoloader --no-dev && $NPM_CMD install && $NPM_CMD run build
+    startCommand: PHP_CMD=$(which php || echo php) && $PHP_CMD artisan reverb:start --host=0.0.0.0 --port=$PORT
     envVars:
       - key: APP_ENV
         value: production

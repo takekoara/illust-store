@@ -15,11 +15,13 @@ Renderでは、**手動で作成したサービス**の場合、ダッシュボ�
 
 ### ステップ2: Start Commandを更新
 
-**Start Command**フィールドに以下をコピー＆ペースト：
+**Start Command**フィールドに以下をコピー＆ペースト（推奨 - パス自動検出）：
 
 ```bash
-/usr/bin/php artisan optimize && /usr/bin/php artisan migrate --force && /usr/bin/php artisan storage:link || true && /usr/bin/php -S 0.0.0.0:$PORT -t public
+PHP_CMD=$(which php || echo php) && $PHP_CMD artisan optimize && $PHP_CMD artisan migrate --force && $PHP_CMD artisan storage:link || true && $PHP_CMD -S 0.0.0.0:$PORT -t public
 ```
+
+このコマンドは、PHPのパスを自動的に検出するため、環境に依存しません。
 
 ### ステップ3: Build Commandを更新
 
