@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { PropsWithChildren } from 'react';
+import { Link } from '@inertiajs/react';
 
 interface Props extends PageProps {}
 
@@ -137,7 +138,7 @@ export default function About({ auth }: Props) {
                                 </h2>
                                 <div className="space-y-3 text-gray-700">
                                     <p>
-                                        本サイトは以下の技術を使用して構築されています：
+                                        本サイトは以下の技術,素材を使用して構築されています：
                                     </p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                         <div className="bg-gray-50 p-4 rounded-lg">
@@ -164,6 +165,14 @@ export default function About({ auth }: Props) {
                                                 <li>• Laravel Reverb (WebSocket)</li>
                                                 <li>• Laravel Queue</li>
                                                 <li>• Vite</li>
+                                            </ul>
+                                        </div>
+                                        <div className="bg-gray-50 p-4 rounded-lg"> 
+                                            <h3 className="font-semibold text-gray-900 mb-2">素材</h3>
+                                            <ul className="text-sm space-y-1 text-gray-600">
+                                                <li>• 画像:<Link href="https://unsplash.com/" target="_blank"> Unsplash</Link></li>
+                                                <li>• アイコン:<Link href="https://fromtheasia.com/illustration/nocopyrightgirl" target="_blank"> ノーコピーライトガール</Link></li>
+
                                             </ul>
                                         </div>
                                     </div>

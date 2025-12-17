@@ -14,7 +14,7 @@ services:
       - key: LOG_CHANNEL
         value: stderr
       - key: LOG_LEVEL
-        value: error
+        value: debug
       - key: FILESYSTEM_DISK
         value: s3
       # 環境変数はRenderダッシュボードで設定してください
@@ -41,7 +41,7 @@ services:
       - key: LOG_CHANNEL
         value: stderr
       - key: LOG_LEVEL
-        value: error
+        value: debug
       - key: QUEUE_CONNECTION
         value: database
 
