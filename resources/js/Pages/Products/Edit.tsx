@@ -83,7 +83,7 @@ export default function Edit({ product, tags, auth }: Props) {
                 id: `existing-${img.id}`,
                 type: 'existing' as const,
                 existingId: img.id,
-                preview: `/storage/${img.image_path}`,
+                preview: `/images/${img.image_path}`,
             }));
         return existing;
     });

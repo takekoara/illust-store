@@ -123,7 +123,7 @@ export default function MyProducts({ products, filters, auth }: Props) {
                                                 product.images.find((img) => img.is_primary) ||
                                                 product.images[0];
                                             const imageUrl = primaryImage
-                                                ? `/storage/${primaryImage.image_path}`
+                                                ? `/images/${primaryImage.image_path}`
                                                 : '/placeholder-image.jpg';
 
                                             return (
