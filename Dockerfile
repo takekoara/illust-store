@@ -57,7 +57,6 @@ RUN composer install --optimize-autoloader --no-dev --no-interaction
 
 # ビルド済みのフロントエンドアセットをコピー
 COPY --from=node-builder --chown=www-data:www-data /app/public/build ./public/build
-COPY --from=node-builder --chown=www-data:www-data /app/public/hot ./public/hot
 
 # ストレージとブートストラップキャッシュのディレクトリを作成
 RUN mkdir -p storage/framework/{sessions,views,cache} \
