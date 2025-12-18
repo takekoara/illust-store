@@ -8,8 +8,8 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { useCreateImages } from '@/hooks/useCreateImages';
 import { useProductTags } from '@/hooks/useProductTags';
 
-// Shared Components (from Edit)
-import { ProductFormFields, TagSelector } from './Edit/index';
+// Shared Components
+import { ProductFormFields, TagSelector } from './shared/index';
 
 // Local Components
 import { ImageUploader } from './Create/index';

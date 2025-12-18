@@ -8,8 +8,11 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { useProductImages } from '@/hooks/useProductImages';
 import { useProductTags } from '@/hooks/useProductTags';
 
+// Shared Components
+import { ProductFormFields, TagSelector } from './shared/index';
+
 // Local Components
-import { ImageUploader, TagSelector, ProductFormFields } from './Edit/index';
+import { ImageUploader } from './Edit/index';
 
 interface Props extends PageProps {
     product: Product;
