@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Conversation;
-use App\Models\Message;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -61,8 +60,8 @@ class ChatControllerTest extends TestCase
             'user_two_id' => max($user1->id, $user2->id),
         ]);
 
-        $key = 'send-message:' . $user1->id;
-        
+        $key = 'send-message:'.$user1->id;
+
         // レート制限を超えるまでメッセージを送信
         for ($i = 0; $i < 30; $i++) {
             RateLimiter::hit($key, 60);
@@ -106,7 +105,7 @@ class ChatControllerTest extends TestCase
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $product = Product::factory()->create(['user_id' => $user2->id]);
-        
+
         $conversation = Conversation::factory()->productRelated()->create([
             'user_one_id' => min($user1->id, $user2->id),
             'user_two_id' => max($user1->id, $user2->id),
@@ -119,4 +118,3 @@ class ChatControllerTest extends TestCase
         $this->assertDatabaseCount('conversations', 1);
     }
 }
-

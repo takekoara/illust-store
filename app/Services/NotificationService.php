@@ -28,7 +28,7 @@ class NotificationService
         try {
             broadcast(new \App\Events\NotificationCreated($notification))->toOthers();
         } catch (\Exception $e) {
-            Log::error('Failed to broadcast notification: ' . $e->getMessage(), [
+            Log::error('Failed to broadcast notification: '.$e->getMessage(), [
                 'notification_id' => $notification->id,
             ]);
         }
@@ -140,4 +140,3 @@ class NotificationService
             ->update(['is_read' => true]);
     }
 }
-

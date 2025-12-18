@@ -15,4 +15,3 @@ class AboutController extends Controller
         return Inertia::render('About/Index');
     }
 }
-

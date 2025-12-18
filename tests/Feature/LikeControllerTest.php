@@ -56,8 +56,8 @@ class LikeControllerTest extends TestCase
         $user = User::factory()->create();
         $product = Product::factory()->create();
 
-        $key = 'toggle-like:' . $user->id;
-        
+        $key = 'toggle-like:'.$user->id;
+
         // レート制限を超えるまでいいねを実行
         for ($i = 0; $i < 60; $i++) {
             RateLimiter::hit($key, 60);
@@ -77,8 +77,8 @@ class LikeControllerTest extends TestCase
 
         // ゲストはログインページにリダイレクトされるか、エラーメッセージが返される
         $this->assertTrue(
-            $response->isRedirect() || 
-            $response->status() === 401 || 
+            $response->isRedirect() ||
+            $response->status() === 401 ||
             $response->status() === 403
         );
     }
@@ -97,4 +97,3 @@ class LikeControllerTest extends TestCase
         ]);
     }
 }
-

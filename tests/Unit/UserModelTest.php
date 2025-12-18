@@ -41,7 +41,7 @@ class UserModelTest extends TestCase
     public function test_user_has_many_products(): void
     {
         Product::factory()->count(3)->create(['user_id' => $this->user->id]);
-        
+
         $this->assertCount(3, $this->user->products);
         $this->assertInstanceOf(Product::class, $this->user->products->first());
     }
@@ -51,7 +51,7 @@ class UserModelTest extends TestCase
         $admin = User::factory()->create(['is_admin' => true]);
         $product = Product::factory()->create(['user_id' => $admin->id]);
         CartItem::factory()->create(['user_id' => $this->user->id, 'product_id' => $product->id]);
-        
+
         $this->assertCount(1, $this->user->cartItems);
         $this->assertInstanceOf(CartItem::class, $this->user->cartItems->first());
     }
@@ -59,7 +59,7 @@ class UserModelTest extends TestCase
     public function test_user_has_many_orders(): void
     {
         Order::factory()->count(2)->create(['user_id' => $this->user->id]);
-        
+
         $this->assertCount(2, $this->user->orders);
         $this->assertInstanceOf(Order::class, $this->user->orders->first());
     }
@@ -67,22 +67,22 @@ class UserModelTest extends TestCase
     public function test_user_has_followers(): void
     {
         $followers = User::factory()->count(3)->create();
-        
+
         foreach ($followers as $follower) {
             $this->user->followers()->attach($follower->id);
         }
-        
+
         $this->assertCount(3, $this->user->followers);
     }
 
     public function test_user_has_following(): void
     {
         $usersToFollow = User::factory()->count(2)->create();
-        
+
         foreach ($usersToFollow as $userToFollow) {
             $this->user->following()->attach($userToFollow->id);
         }
-        
+
         $this->assertCount(2, $this->user->following);
     }
 
@@ -93,7 +93,7 @@ class UserModelTest extends TestCase
             'user_one_id' => $this->user->id,
             'user_two_id' => $otherUser->id,
         ]);
-        
+
         $this->assertCount(1, $this->user->conversationsAsUserOne);
     }
 
@@ -109,7 +109,7 @@ class UserModelTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        
+
         $this->assertCount(1, $this->user->fresh()->conversationsAsUserTwo);
     }
 
@@ -117,7 +117,7 @@ class UserModelTest extends TestCase
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
-        
+
         Conversation::factory()->create([
             'user_one_id' => $this->user->id,
             'user_two_id' => $user1->id,
@@ -126,7 +126,7 @@ class UserModelTest extends TestCase
             'user_one_id' => $user2->id,
             'user_two_id' => $this->user->id,
         ]);
-        
+
         $this->assertCount(2, $this->user->conversations()->get());
     }
 
@@ -141,14 +141,14 @@ class UserModelTest extends TestCase
             'user_id' => $this->user->id,
             'conversation_id' => $conversation->id,
         ]);
-        
+
         $this->assertCount(5, $this->user->messages);
     }
 
     public function test_user_has_many_notifications(): void
     {
         CustomNotification::factory()->count(3)->create(['user_id' => $this->user->id]);
-        
+
         $this->assertCount(3, $this->user->notifications);
     }
 
@@ -156,11 +156,11 @@ class UserModelTest extends TestCase
     {
         $admin = User::factory()->create(['is_admin' => true]);
         $products = Product::factory()->count(2)->create(['user_id' => $admin->id]);
-        
+
         foreach ($products as $product) {
             Like::factory()->create(['user_id' => $this->user->id, 'product_id' => $product->id]);
         }
-        
+
         $this->assertCount(2, $this->user->likes);
     }
 
@@ -168,11 +168,11 @@ class UserModelTest extends TestCase
     {
         $admin = User::factory()->create(['is_admin' => true]);
         $products = Product::factory()->count(2)->create(['user_id' => $admin->id]);
-        
+
         foreach ($products as $product) {
             Bookmark::factory()->create(['user_id' => $this->user->id, 'product_id' => $product->id]);
         }
-        
+
         $this->assertCount(2, $this->user->bookmarks);
     }
 
@@ -181,7 +181,7 @@ class UserModelTest extends TestCase
         $admin = User::factory()->create(['is_admin' => true]);
         $product = Product::factory()->create(['user_id' => $admin->id]);
         ProductView::factory()->create(['user_id' => $this->user->id, 'product_id' => $product->id]);
-        
+
         $this->assertCount(1, $this->user->productViews);
     }
 
@@ -209,4 +209,3 @@ class UserModelTest extends TestCase
         $this->assertIsBool($user->is_admin);
     }
 }
-

@@ -18,8 +18,8 @@ class OrderService
     public function createOrderFromCart(array $billingAddress, ?int $tempOrderId = null): Order
     {
         $cartItems = CartItem::with(['product' => function ($q) {
-                $q->withTrashed();
-            }])
+            $q->withTrashed();
+        }])
             ->where('user_id', Auth::id())
             ->get();
 
@@ -29,7 +29,7 @@ class OrderService
 
         // Validate products
         $invalidItems = $cartItems->filter(function ($item) {
-            return !$item->product || !$item->product->is_active || $item->product->price <= 0;
+            return ! $item->product || ! $item->product->is_active || $item->product->price <= 0;
         });
 
         if ($invalidItems->isNotEmpty()) {
@@ -71,11 +71,12 @@ class OrderService
             $order->refresh();
             if ($order->items->isEmpty()) {
                 foreach ($cartItems as $cartItem) {
-                    if (!$cartItem->product) {
+                    if (! $cartItem->product) {
                         Log::warning('Cart item has no product', [
                             'cart_item_id' => $cartItem->id,
                             'product_id' => $cartItem->product_id,
                         ]);
+
                         continue;
                     }
 
@@ -91,7 +92,7 @@ class OrderService
             CartItem::where('user_id', Auth::id())->delete();
 
             // Clear dashboard cache
-            Cache::forget('dashboard.stats.user.' . Auth::id());
+            Cache::forget('dashboard.stats.user.'.Auth::id());
 
             return $order->fresh(['items.product']);
         });
@@ -117,11 +118,10 @@ class OrderService
             }
 
             // Clear cache
-            Cache::forget('dashboard.stats.user.' . $order->user_id);
+            Cache::forget('dashboard.stats.user.'.$order->user_id);
             Cache::forget('dashboard.stats.admin');
 
             return true;
         });
     }
 }
-

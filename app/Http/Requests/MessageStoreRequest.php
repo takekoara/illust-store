@@ -14,9 +14,9 @@ class MessageStoreRequest extends FormRequest
     {
         $conversation = $this->route('conversation');
         $userId = $this->user()?->id;
-        
+
         return $userId && (
-            $conversation->user_one_id === $userId || 
+            $conversation->user_one_id === $userId ||
             $conversation->user_two_id === $userId
         );
     }
@@ -43,7 +43,7 @@ class MessageStoreRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             // レート制限: 1分間に最大30メッセージ
-            $key = 'send-message:' . $this->user()->id;
+            $key = 'send-message:'.$this->user()->id;
             if (RateLimiter::tooManyAttempts($key, 30)) {
                 $seconds = RateLimiter::availableIn($key);
                 $validator->errors()->add(
@@ -73,8 +73,7 @@ class MessageStoreRequest extends FormRequest
     protected function passedValidation()
     {
         // レート制限を記録
-        $key = 'send-message:' . $this->user()->id;
+        $key = 'send-message:'.$this->user()->id;
         RateLimiter::hit($key, 60); // 60秒のウィンドウ
     }
 }
-

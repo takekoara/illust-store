@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { PageProps } from '@/types';
-import { Pagination } from '@/Components/Pagination';
+import Pagination from '@/Components/Pagination';
 
 // Components
 import { BookmarkCard, EmptyBookmarks } from './components';

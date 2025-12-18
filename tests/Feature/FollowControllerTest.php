@@ -12,6 +12,7 @@ class FollowControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private User $targetUser;
 
     protected function setUp(): void
@@ -26,7 +27,7 @@ class FollowControllerTest extends TestCase
         $response = $this->post(route('follow.store'), [
             'user_id' => $this->targetUser->id,
         ]);
-        
+
         $response->assertRedirect(route('login'));
     }
 
@@ -184,4 +185,3 @@ class FollowControllerTest extends TestCase
         $response->assertSessionHasErrors('user_id');
     }
 }
-

@@ -75,11 +75,11 @@ class DashboardService
     private function getRecentOrders(int $limit = 5)
     {
         return Order::with([
-                'user:id,name,username,email',
-                'items.product' => function ($query) {
-                    $query->withTrashed()->with('images');
-                }
-            ])
+            'user:id,name,username,email',
+            'items.product' => function ($query) {
+                $query->withTrashed()->with('images');
+            },
+        ])
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
@@ -95,7 +95,7 @@ class DashboardService
             ->with([
                 'items.product' => function ($query) {
                     $query->withTrashed()->with('images');
-                }
+                },
             ])
             ->orderBy('created_at', 'desc')
             ->limit($limit)

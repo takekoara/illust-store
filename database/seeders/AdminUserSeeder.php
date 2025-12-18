@@ -17,7 +17,7 @@ class AdminUserSeeder extends Seeder
         $user = User::where('email', 'admin@example.com')->first();
         if ($user) {
             $user->update(['is_admin' => true]);
-            $this->command->info('既存のユーザーを管理者に設定しました: ' . $user->email);
+            $this->command->info('既存のユーザーを管理者に設定しました: '.$user->email);
         } else {
             // 新しい管理者ユーザーを作成
             User::create([
@@ -31,4 +31,3 @@ class AdminUserSeeder extends Seeder
         }
     }
 }
-

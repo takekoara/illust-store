@@ -6,7 +6,6 @@ use App\Models\Bookmark;
 use App\Models\Like;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 
 class EngagementService
@@ -154,17 +153,18 @@ class EngagementService
     private function checkRateLimit(string $action, int $userId, string $actionName): ?array
     {
         $key = "{$action}:{$userId}";
-        
+
         if (RateLimiter::tooManyAttempts($key, 60)) {
             $seconds = RateLimiter::availableIn($key);
+
             return [
                 'success' => false,
                 'error' => "{$actionName}の操作が多すぎます。{$seconds}秒後に再度お試しください。",
             ];
         }
-        
+
         RateLimiter::hit($key, 60);
+
         return null;
     }
 }
-

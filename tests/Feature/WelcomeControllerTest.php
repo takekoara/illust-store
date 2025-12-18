@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Bookmark;
 use App\Models\Like;
 use App\Models\Product;
-use App\Models\ProductView;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,7 +27,7 @@ class WelcomeControllerTest extends TestCase
     public function test_welcome_page_is_accessible(): void
     {
         $response = $this->get(route('welcome'));
-        
+
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('Welcome')
@@ -43,7 +42,7 @@ class WelcomeControllerTest extends TestCase
             'is_active' => true,
             'sales_count' => 100,
         ]);
-        
+
         // Add engagement to make it popular
         $users = User::factory()->count(5)->create();
         foreach ($users as $user) {
@@ -104,12 +103,12 @@ class WelcomeControllerTest extends TestCase
         // Arrange
         $tag1 = Tag::factory()->create(['name' => 'illustration']);
         $tag2 = Tag::factory()->create(['name' => 'digital_art']);
-        
+
         $products = Product::factory()->count(5)->create([
             'user_id' => $this->admin->id,
             'is_active' => true,
         ]);
-        
+
         foreach ($products as $product) {
             $product->tags()->attach($tag1);
         }
@@ -151,7 +150,7 @@ class WelcomeControllerTest extends TestCase
             'is_active' => true,
             'sales_count' => 0,
         ]);
-        
+
         $morePopular = Product::factory()->create([
             'user_id' => $this->admin->id,
             'is_active' => true,
@@ -182,7 +181,7 @@ class WelcomeControllerTest extends TestCase
             'is_active' => true,
             'created_at' => now()->subDays(5),
         ]);
-        
+
         $newProduct = Product::factory()->create([
             'user_id' => $this->admin->id,
             'is_active' => true,
@@ -220,10 +219,10 @@ class WelcomeControllerTest extends TestCase
 
         // Act - First request
         $this->get(route('welcome'));
-        
+
         // Create more tags after cache
         Tag::factory()->create(['name' => 'new_tag']);
-        
+
         // Act - Second request (should use cache)
         $response = $this->get(route('welcome'));
 
@@ -233,4 +232,3 @@ class WelcomeControllerTest extends TestCase
         );
     }
 }
-

@@ -13,7 +13,9 @@ class CartControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private User $admin;
+
     private Product $product;
 
     protected function setUp(): void
@@ -36,7 +38,7 @@ class CartControllerTest extends TestCase
     public function test_user_can_view_empty_cart(): void
     {
         $response = $this->actingAs($this->user)->get(route('cart.index'));
-        
+
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('Cart/Index')
@@ -230,4 +232,3 @@ class CartControllerTest extends TestCase
         );
     }
 }
-

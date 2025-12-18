@@ -34,7 +34,7 @@ class ChatController extends Controller
      */
     public function show(Conversation $conversation): Response
     {
-        if (!$this->chatService->canAccessConversation($conversation, Auth::id())) {
+        if (! $this->chatService->canAccessConversation($conversation, Auth::id())) {
             abort(403);
         }
 
@@ -74,7 +74,7 @@ class ChatController extends Controller
      */
     public function createFromProduct(Product $product)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login')->with('error', 'チャットを開始するにはログインが必要です。');
         }
 
@@ -94,7 +94,7 @@ class ChatController extends Controller
      */
     public function storeMessage(MessageStoreRequest $request, Conversation $conversation)
     {
-        if (!$this->chatService->canAccessConversation($conversation, Auth::id())) {
+        if (! $this->chatService->canAccessConversation($conversation, Auth::id())) {
             abort(403);
         }
 

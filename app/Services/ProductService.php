@@ -4,10 +4,8 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Models\Tag;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
@@ -51,7 +49,7 @@ class ProductService
 
                 // Handle tags
                 $finalTagIds = $this->processTags($tagIds, $tagNames);
-                if (!empty($finalTagIds)) {
+                if (! empty($finalTagIds)) {
                     $product->tags()->attach($finalTagIds);
                 }
 
@@ -104,52 +102,52 @@ class ProductService
                     }
                 }
 
-            // Handle image ordering
-            if ($combinedOrder) {
-                $allImageIds = [];
-                foreach ($combinedOrder as $orderItem) {
-                    if ($orderItem['type'] === 'new' && isset($newImageIds[$orderItem['index']])) {
-                        $allImageIds[] = $newImageIds[$orderItem['index']];
-                    } elseif ($orderItem['type'] === 'existing' && isset($orderItem['id'])) {
-                        $allImageIds[] = $orderItem['id'];
+                // Handle image ordering
+                if ($combinedOrder) {
+                    $allImageIds = [];
+                    foreach ($combinedOrder as $orderItem) {
+                        if ($orderItem['type'] === 'new' && isset($newImageIds[$orderItem['index']])) {
+                            $allImageIds[] = $newImageIds[$orderItem['index']];
+                        } elseif ($orderItem['type'] === 'existing' && isset($orderItem['id'])) {
+                            $allImageIds[] = $orderItem['id'];
+                        }
+                    }
+
+                    // Delete images not in order
+                    if (! empty($allImageIds)) {
+                        $imagesToDelete = $product->images()->whereNotIn('id', $allImageIds)->get();
+                        foreach ($imagesToDelete as $image) {
+                            $this->imageService->deleteImage($image->image_path, $image->thumbnail_path);
+                        }
+                        $product->images()->whereNotIn('id', $allImageIds)->delete();
+                    } else {
+                        // All images should be deleted
+                        $imagesToDelete = $product->images()->get();
+                        foreach ($imagesToDelete as $image) {
+                            $this->imageService->deleteImage($image->image_path, $image->thumbnail_path);
+                        }
+                        $product->images()->delete();
+                    }
+
+                    // Update sort order
+                    foreach ($allImageIds as $index => $imageId) {
+                        $product->images()->where('id', $imageId)->update([
+                            'sort_order' => $index,
+                            'is_primary' => $index === 0,
+                        ]);
                     }
                 }
 
-                // Delete images not in order
-                if (!empty($allImageIds)) {
-                    $imagesToDelete = $product->images()->whereNotIn('id', $allImageIds)->get();
-                    foreach ($imagesToDelete as $image) {
-                        $this->imageService->deleteImage($image->image_path, $image->thumbnail_path);
-                    }
-                    $product->images()->whereNotIn('id', $allImageIds)->delete();
+                // Handle tags
+                $finalTagIds = $this->processTags($tagIds, $tagNames);
+                if (! empty($finalTagIds)) {
+                    $product->tags()->sync($finalTagIds);
                 } else {
-                    // All images should be deleted
-                    $imagesToDelete = $product->images()->get();
-                    foreach ($imagesToDelete as $image) {
-                        $this->imageService->deleteImage($image->image_path, $image->thumbnail_path);
-                    }
-                    $product->images()->delete();
+                    $product->tags()->detach();
                 }
 
-                // Update sort order
-                foreach ($allImageIds as $index => $imageId) {
-                    $product->images()->where('id', $imageId)->update([
-                        'sort_order' => $index,
-                        'is_primary' => $index === 0,
-                    ]);
-                }
-            }
-
-            // Handle tags
-            $finalTagIds = $this->processTags($tagIds, $tagNames);
-            if (!empty($finalTagIds)) {
-                $product->tags()->sync($finalTagIds);
-            } else {
-                $product->tags()->detach();
-            }
-
-            return $product->fresh();
-        });
+                return $product->fresh();
+            });
         } catch (\Exception $e) {
             // エラー時は新規アップロードしたファイルを削除
             foreach ($uploadedFiles as $file) {
@@ -184,9 +182,9 @@ class ProductService
         if ($tagNames) {
             foreach ($tagNames as $tagName) {
                 $tagName = trim($tagName);
-                if (!empty($tagName)) {
+                if (! empty($tagName)) {
                     $tag = Tag::firstOrCreate(['name' => $tagName]);
-                    if (!in_array($tag->id, $finalTagIds)) {
+                    if (! in_array($tag->id, $finalTagIds)) {
                         $finalTagIds[] = $tag->id;
                     }
                 }
@@ -196,4 +194,3 @@ class ProductService
         return $finalTagIds;
     }
 }
-

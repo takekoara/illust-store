@@ -10,9 +10,6 @@ class ImageService
     /**
      * Process and store product image with optimization
      *
-     * @param UploadedFile $file
-     * @param string $directory
-     * @param array $options
      * @return array ['path' => string, 'thumbnail_path' => string|null]
      */
     public function processProductImage(UploadedFile $file, string $directory = 'products', array $options = []): array
@@ -27,10 +24,10 @@ class ImageService
         // 元のファイル名を取得
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $extension = $file->getClientOriginalExtension();
-        $filename = $originalName . '_' . time() . '_' . uniqid() . '.' . $extension;
+        $filename = $originalName.'_'.time().'_'.uniqid().'.'.$extension;
 
         // 画像をリサイズして保存
-        $path = $directory . '/' . $filename;
+        $path = $directory.'/'.$filename;
         $resizedImage = $this->resizeImage($file->getRealPath(), $maxWidth, $maxHeight, $quality);
         Storage::disk('public')->put($path, $resizedImage);
 
@@ -38,8 +35,8 @@ class ImageService
 
         // サムネイルを生成
         if ($generateThumbnail) {
-            $thumbnailFilename = $originalName . '_thumb_' . time() . '_' . uniqid() . '.' . $extension;
-            $thumbnailPath = $directory . '/thumbnails/' . $thumbnailFilename;
+            $thumbnailFilename = $originalName.'_thumb_'.time().'_'.uniqid().'.'.$extension;
+            $thumbnailPath = $directory.'/thumbnails/'.$thumbnailFilename;
             $thumbnailImage = $this->createThumbnail($file->getRealPath(), $thumbnailWidth, $thumbnailHeight, $quality);
             Storage::disk('public')->put($thumbnailPath, $thumbnailImage);
             $result['thumbnail_path'] = $thumbnailPath;
@@ -53,13 +50,13 @@ class ImageService
      */
     protected function resizeImage(string $filePath, int $maxWidth, int $maxHeight, int $quality): string
     {
-        if (!function_exists('imagecreatefromstring')) {
+        if (! function_exists('imagecreatefromstring')) {
             // GDが利用できない場合は元のファイルを返す
             return file_get_contents($filePath);
         }
 
         $imageInfo = getimagesize($filePath);
-        if (!$imageInfo) {
+        if (! $imageInfo) {
             return file_get_contents($filePath);
         }
 
@@ -67,8 +64,8 @@ class ImageService
 
         // アスペクト比を計算
         $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
-        $newWidth = (int)($originalWidth * $ratio);
-        $newHeight = (int)($originalHeight * $ratio);
+        $newWidth = (int) ($originalWidth * $ratio);
+        $newHeight = (int) ($originalHeight * $ratio);
 
         // 元の画像を読み込む
         $source = match ($type) {
@@ -80,7 +77,7 @@ class ImageService
             default => null,
         };
 
-        if (!$source) {
+        if (! $source) {
             return file_get_contents($filePath);
         }
 
@@ -102,7 +99,7 @@ class ImageService
         ob_start();
         match ($type) {
             IMAGETYPE_JPEG => imagejpeg($destination, null, $quality),
-            IMAGETYPE_PNG => imagepng($destination, null, (int)(9 - ($quality / 100) * 9)),
+            IMAGETYPE_PNG => imagepng($destination, null, (int) (9 - ($quality / 100) * 9)),
             IMAGETYPE_GIF => imagegif($destination),
             IMAGETYPE_AVIF => function_exists('imageavif') ? imageavif($destination, null, $quality) : imagejpeg($destination, null, $quality),
             IMAGETYPE_WEBP => function_exists('imagewebp') ? imagewebp($destination, null, $quality) : imagejpeg($destination, null, $quality),
@@ -121,12 +118,12 @@ class ImageService
      */
     protected function createThumbnail(string $filePath, int $width, int $height, int $quality): string
     {
-        if (!function_exists('imagecreatefromstring')) {
+        if (! function_exists('imagecreatefromstring')) {
             return file_get_contents($filePath);
         }
 
         $imageInfo = getimagesize($filePath);
-        if (!$imageInfo) {
+        if (! $imageInfo) {
             return file_get_contents($filePath);
         }
 
@@ -142,14 +139,14 @@ class ImageService
             default => null,
         };
 
-        if (!$source) {
+        if (! $source) {
             return file_get_contents($filePath);
         }
 
         // 正方形にクロップするサイズを計算
         $size = min($originalWidth, $originalHeight);
-        $x = (int)(($originalWidth - $size) / 2);
-        $y = (int)(($originalHeight - $size) / 2);
+        $x = (int) (($originalWidth - $size) / 2);
+        $y = (int) (($originalHeight - $size) / 2);
 
         // 新しい画像を作成
         $destination = imagecreatetruecolor($width, $height);
@@ -169,7 +166,7 @@ class ImageService
         ob_start();
         match ($type) {
             IMAGETYPE_JPEG => imagejpeg($destination, null, $quality),
-            IMAGETYPE_PNG => imagepng($destination, null, (int)(9 - ($quality / 100) * 9)),
+            IMAGETYPE_PNG => imagepng($destination, null, (int) (9 - ($quality / 100) * 9)),
             IMAGETYPE_GIF => imagegif($destination),
             IMAGETYPE_AVIF => function_exists('imageavif') ? imageavif($destination, null, $quality) : imagejpeg($destination, null, $quality),
             IMAGETYPE_WEBP => function_exists('imagewebp') ? imagewebp($destination, null, $quality) : imagejpeg($destination, null, $quality),
@@ -197,4 +194,3 @@ class ImageService
         }
     }
 }
-

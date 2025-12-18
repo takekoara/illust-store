@@ -97,4 +97,3 @@ class ConversationModelTest extends TestCase
         $this->assertEquals($user1->id, $otherUser2->id);
     }
 }
-

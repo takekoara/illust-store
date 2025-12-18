@@ -38,7 +38,7 @@ class NotificationController extends Controller
                 'unreadCount' => $unreadCount,
             ]);
         } catch (\Exception $e) {
-            Log::error('Notification index error: ' . $e->getMessage(), [
+            Log::error('Notification index error: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
@@ -91,4 +91,3 @@ class NotificationController extends Controller
         return response()->json(['count' => $count]);
     }
 }
-

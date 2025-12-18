@@ -30,6 +30,7 @@ class GenerateDemoProducts extends Command
 
         if ($count < 1) {
             $this->error('商品数は1以上である必要があります。');
+
             return 1;
         }
 
@@ -37,9 +38,9 @@ class GenerateDemoProducts extends Command
         $this->newLine();
 
         // Seederにコマンドインスタンスを渡すために、直接実行
-        $seeder = new DemoProductSeeder();
+        $seeder = new DemoProductSeeder;
         $seeder->setCommand($this);
-        
+
         // 商品数を設定するために、プロパティで渡す
         $seeder->productCount = $count;
         $seeder->run();

@@ -24,24 +24,24 @@ class StripeServiceTest extends TestCase
     {
         // Temporarily override config
         config(['services.stripe.secret' => null]);
-        
-        $service = new StripeService();
+
+        $service = new StripeService;
         $this->assertFalse($service->isConfigured());
     }
 
     public function test_is_configured_returns_true_when_secret_exists(): void
     {
         config(['services.stripe.secret' => 'sk_test_123']);
-        
-        $service = new StripeService();
+
+        $service = new StripeService;
         $this->assertTrue($service->isConfigured());
     }
 
     public function test_create_payment_intent_fails_when_not_configured(): void
     {
         config(['services.stripe.secret' => null]);
-        
-        $service = new StripeService();
+
+        $service = new StripeService;
         $result = $service->createPaymentIntent(1000, []);
 
         $this->assertFalse($result['success']);
@@ -121,7 +121,8 @@ class StripeServiceTest extends TestCase
         config(['app.debug' => true]);
 
         // Stripe例外は継承で作成
-        $mockException = new class('Test error message', 400) extends \Stripe\Exception\ApiErrorException {
+        $mockException = new class('Test error message', 400) extends \Stripe\Exception\ApiErrorException
+        {
             public function getStripeCode(): ?string
             {
                 return 'unknown_error';
@@ -137,7 +138,8 @@ class StripeServiceTest extends TestCase
     {
         config(['app.debug' => false]);
 
-        $mockException = new class('Secret error details', 400) extends \Stripe\Exception\ApiErrorException {
+        $mockException = new class('Secret error details', 400) extends \Stripe\Exception\ApiErrorException
+        {
             public function getStripeCode(): ?string
             {
                 return 'unknown_error';
@@ -150,4 +152,3 @@ class StripeServiceTest extends TestCase
         $this->assertEquals('支払い処理の作成に失敗しました。カード情報を確認して再度お試しください。', $message);
     }
 }
-

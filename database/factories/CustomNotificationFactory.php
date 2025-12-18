@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\CustomNotification;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -39,4 +38,3 @@ class CustomNotificationFactory extends Factory
         ]);
     }
 }
-

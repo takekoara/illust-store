@@ -20,6 +20,7 @@ class ProductModelTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Product $product;
 
     protected function setUp(): void
@@ -38,7 +39,7 @@ class ProductModelTest extends TestCase
     public function test_product_has_many_images(): void
     {
         ProductImage::factory()->count(3)->create(['product_id' => $this->product->id]);
-        
+
         $this->assertCount(3, $this->product->images);
         $this->assertInstanceOf(ProductImage::class, $this->product->images->first());
     }
@@ -48,9 +49,9 @@ class ProductModelTest extends TestCase
         ProductImage::factory()->create(['product_id' => $this->product->id, 'sort_order' => 2]);
         ProductImage::factory()->create(['product_id' => $this->product->id, 'sort_order' => 0]);
         ProductImage::factory()->create(['product_id' => $this->product->id, 'sort_order' => 1]);
-        
+
         $images = $this->product->fresh()->images;
-        
+
         $this->assertEquals(0, $images[0]->sort_order);
         $this->assertEquals(1, $images[1]->sort_order);
         $this->assertEquals(2, $images[2]->sort_order);
@@ -60,7 +61,7 @@ class ProductModelTest extends TestCase
     {
         ProductImage::factory()->create(['product_id' => $this->product->id, 'is_primary' => false]);
         $primaryImage = ProductImage::factory()->create(['product_id' => $this->product->id, 'is_primary' => true]);
-        
+
         $this->assertInstanceOf(ProductImage::class, $this->product->primaryImage);
         $this->assertEquals($primaryImage->id, $this->product->primaryImage->id);
     }
@@ -69,7 +70,7 @@ class ProductModelTest extends TestCase
     {
         $tags = Tag::factory()->count(3)->create();
         $this->product->tags()->attach($tags);
-        
+
         $this->assertCount(3, $this->product->tags);
         $this->assertInstanceOf(Tag::class, $this->product->tags->first());
     }
@@ -78,7 +79,7 @@ class ProductModelTest extends TestCase
     {
         $user = User::factory()->create();
         CartItem::factory()->create(['product_id' => $this->product->id, 'user_id' => $user->id]);
-        
+
         $this->assertCount(1, $this->product->cartItems);
         $this->assertInstanceOf(CartItem::class, $this->product->cartItems->first());
     }
@@ -91,7 +92,7 @@ class ProductModelTest extends TestCase
             'order_id' => $order->id,
             'product_id' => $this->product->id,
         ]);
-        
+
         $this->assertCount(1, $this->product->orderItems);
         $this->assertInstanceOf(OrderItem::class, $this->product->orderItems->first());
     }
@@ -100,7 +101,7 @@ class ProductModelTest extends TestCase
     {
         $user = User::factory()->create();
         Like::factory()->create(['product_id' => $this->product->id, 'user_id' => $user->id]);
-        
+
         $this->assertCount(1, $this->product->likes);
         $this->assertInstanceOf(Like::class, $this->product->likes->first());
     }
@@ -109,7 +110,7 @@ class ProductModelTest extends TestCase
     {
         $user = User::factory()->create();
         Bookmark::factory()->create(['product_id' => $this->product->id, 'user_id' => $user->id]);
-        
+
         $this->assertCount(1, $this->product->bookmarks);
         $this->assertInstanceOf(Bookmark::class, $this->product->bookmarks->first());
     }
@@ -118,7 +119,7 @@ class ProductModelTest extends TestCase
     {
         $user = User::factory()->create();
         ProductView::factory()->create(['product_id' => $this->product->id, 'user_id' => $user->id]);
-        
+
         $this->assertCount(1, $this->product->productViews);
         $this->assertInstanceOf(ProductView::class, $this->product->productViews->first());
     }
@@ -129,7 +130,7 @@ class ProductModelTest extends TestCase
             'user_id' => $this->admin->id,
             'price' => '1500.50',
         ]);
-        
+
         $this->assertIsFloat($product->price + 0);
     }
 
@@ -139,7 +140,7 @@ class ProductModelTest extends TestCase
             'user_id' => $this->admin->id,
             'is_active' => 1,
         ]);
-        
+
         $this->assertIsBool($product->is_active);
         $this->assertTrue($product->is_active);
     }
@@ -148,9 +149,8 @@ class ProductModelTest extends TestCase
     {
         $productId = $this->product->id;
         $this->product->delete();
-        
+
         $this->assertSoftDeleted('products', ['id' => $productId]);
         $this->assertNotNull(Product::withTrashed()->find($productId));
     }
 }
-

@@ -21,6 +21,7 @@ class ProductionProductSeeder extends Seeder
             if ($this->command) {
                 $this->command->info('商品が既に存在するため、シーダーをスキップしました。');
             }
+
             return;
         }
 
@@ -30,7 +31,7 @@ class ProductionProductSeeder extends Seeder
 
         // 管理者ユーザーを取得または作成
         $adminUser = User::where('is_admin', true)->first();
-        if (!$adminUser) {
+        if (! $adminUser) {
             $adminUser = User::create([
                 'name' => 'Admin User',
                 'email' => 'admin@example.com',
@@ -82,7 +83,7 @@ class ProductionProductSeeder extends Seeder
         ];
 
         // 商品説明のサンプル
-        $description = "これはテスト商品です。出典:Unsplash。";
+        $description = 'これはテスト商品です。出典:Unsplash。';
 
         // 価格の範囲
         $prices = [300, 500, 800, 1000, 1500, 2000, 2500, 3000];
@@ -102,7 +103,7 @@ class ProductionProductSeeder extends Seeder
             // 商品を作成
             $product = Product::create([
                 'user_id' => $adminUser->id,
-                'title' => $title . ' ' . ($i + 1),
+                'title' => $title.' '.($i + 1),
                 'description' => $description,
                 'price' => $price,
                 'is_active' => true,
@@ -115,7 +116,7 @@ class ProductionProductSeeder extends Seeder
             $imageCount = random_int(1, min(6, count($availableImages)));
             $selectedImageKeys = array_rand($availableImages, $imageCount);
             $selectedImageKeys = is_array($selectedImageKeys) ? $selectedImageKeys : [$selectedImageKeys];
-            $selectedImages = array_map(fn($key) => $availableImages[$key], $selectedImageKeys);
+            $selectedImages = array_map(fn ($key) => $availableImages[$key], $selectedImageKeys);
 
             // 画像を追加
             foreach ($selectedImages as $index => $imagePath) {
@@ -131,7 +132,7 @@ class ProductionProductSeeder extends Seeder
             $tagCount = random_int(1, min(5, count($tags)));
             $selectedTagKeys = array_rand($tags, $tagCount);
             $selectedTagKeys = is_array($selectedTagKeys) ? $selectedTagKeys : [$selectedTagKeys];
-            $productTags = array_map(fn($key) => $tags[$key], $selectedTagKeys);
+            $productTags = array_map(fn ($key) => $tags[$key], $selectedTagKeys);
             $product->tags()->attach(collect($productTags)->pluck('id'));
 
             if ($this->command) {
@@ -143,8 +144,7 @@ class ProductionProductSeeder extends Seeder
             $bar->finish();
             $this->command->newLine();
             $this->command->info("✅ {$productCount}個の商品を生成しました！");
-            $this->command->info("✅ 画像は pic1.avif ～ pic18.avif からランダムに選択されました。");
+            $this->command->info('✅ 画像は pic1.avif ～ pic18.avif からランダムに選択されました。');
         }
     }
 }
-

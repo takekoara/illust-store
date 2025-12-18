@@ -21,11 +21,11 @@ class ConversationFactory extends Factory
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
-        
+
         // user_one_idを常に小さい方にする
         $userOneId = min($user1->id, $user2->id);
         $userTwoId = max($user1->id, $user2->id);
-        
+
         return [
             'user_one_id' => $userOneId,
             'user_two_id' => $userTwoId,
@@ -48,4 +48,3 @@ class ConversationFactory extends Factory
         ]);
     }
 }
-

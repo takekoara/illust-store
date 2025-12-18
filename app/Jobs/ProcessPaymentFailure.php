@@ -26,19 +26,21 @@ class ProcessPaymentFailure implements ShouldQueue
      */
     public function handle(): void
     {
-        if (!$this->orderId) {
+        if (! $this->orderId) {
             Log::warning('ProcessPaymentFailure: No order ID in metadata', [
                 'payment_intent_id' => $this->paymentIntentId,
             ]);
+
             return;
         }
 
         $order = Order::find($this->orderId);
-        if (!$order) {
+        if (! $order) {
             Log::warning('ProcessPaymentFailure: Order not found', [
                 'order_id' => $this->orderId,
                 'payment_intent_id' => $this->paymentIntentId,
             ]);
+
             return;
         }
 

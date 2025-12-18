@@ -67,7 +67,7 @@ class ImageServiceTest extends TestCase
     public function test_process_product_image_throws_type_error_with_string(): void
     {
         $this->expectException(\TypeError::class);
-        
+
         // @phpstan-ignore-next-line
         // stringを渡すとTypeErrorが発生
         $this->imageService->processProductImage('invalid_string', 'products');
@@ -90,4 +90,3 @@ class ImageServiceTest extends TestCase
         $this->assertArrayHasKey('path', $result);
     }
 }
-

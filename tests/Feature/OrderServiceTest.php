@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\CartItem;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\OrderService;
@@ -28,7 +27,7 @@ class OrderServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $product = Product::factory()->create(['price' => 1000, 'is_active' => true]);
-        
+
         CartItem::factory()->create([
             'user_id' => $user->id,
             'product_id' => $product->id,
@@ -71,7 +70,7 @@ class OrderServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $product = Product::factory()->create(['is_active' => false]);
-        
+
         CartItem::factory()->create([
             'user_id' => $user->id,
             'product_id' => $product->id,
@@ -144,4 +143,3 @@ class OrderServiceTest extends TestCase
         $this->assertEquals(6, $product->fresh()->sales_count); // 5 + 1
     }
 }
-

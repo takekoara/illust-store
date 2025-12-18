@@ -12,6 +12,7 @@ class ProductUpdateRequest extends FormRequest
     public function authorize(): bool
     {
         $product = $this->route('product');
+
         return $this->user()?->id === $product->user_id;
     }
 
@@ -64,4 +65,3 @@ class ProductUpdateRequest extends FormRequest
         ];
     }
 }
-

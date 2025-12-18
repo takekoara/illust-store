@@ -38,7 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Throwable $exception, \Illuminate\Http\Request $request) {
             if ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
                 $status = $exception->getStatusCode();
-                
+
                 if (in_array($status, [403, 404, 500])) {
                     // Check if this is an Inertia request
                     if ($request->header('X-Inertia')) {
@@ -46,7 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
                             'message' => $exception->getMessage() ?: null,
                         ])->toResponse($request)->setStatusCode($status);
                     }
-                    
+
                     // For non-Inertia requests, return a JSON response
                     return response()->json([
                         'message' => $exception->getMessage() ?: 'エラーが発生しました。',

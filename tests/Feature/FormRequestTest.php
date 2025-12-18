@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Http\Requests\MessageStoreRequest;
 use App\Http\Requests\ProductStoreRequest;
-use App\Http\Requests\ProductUpdateRequest;
 use App\Models\Conversation;
 use App\Models\Product;
 use App\Models\User;
@@ -19,7 +18,7 @@ class FormRequestTest extends TestCase
     public function test_product_store_request_validates_required_fields(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
-        $request = new ProductStoreRequest();
+        $request = new ProductStoreRequest;
 
         $validator = Validator::make([], $request->rules());
 
@@ -34,7 +33,7 @@ class FormRequestTest extends TestCase
         $admin = User::factory()->create(['is_admin' => true]);
         $user = User::factory()->create(['is_admin' => false]);
 
-        $request = new ProductStoreRequest();
+        $request = new ProductStoreRequest;
         $request->setUserResolver(fn () => $admin);
 
         $this->assertTrue($request->authorize());
@@ -54,7 +53,7 @@ class FormRequestTest extends TestCase
             'title' => 'Updated Title',
             'price' => 1000,
         ]);
-        
+
         // 所有者は更新できる
         $response1->assertRedirect();
 
@@ -62,7 +61,7 @@ class FormRequestTest extends TestCase
             'title' => 'Hacked Title',
             'price' => 1000,
         ]);
-        
+
         // 他のユーザーは更新できない
         $response2->assertStatus(403);
     }
@@ -76,7 +75,7 @@ class FormRequestTest extends TestCase
             'user_two_id' => max($user1->id, $user2->id),
         ]);
 
-        $request = new MessageStoreRequest();
+        $request = new MessageStoreRequest;
         $request->setRouteResolver(fn () => ['conversation' => $conversation]);
         $request->setUserResolver(fn () => $user1);
 
@@ -102,23 +101,22 @@ class FormRequestTest extends TestCase
         $response1 = $this->actingAs($user1)->post(route('chat.message', $conversation), [
             'message' => 'Test message from user1',
         ]);
-        
+
         // 参加者はメッセージを送信できる
         $response1->assertRedirect();
 
         $response2 = $this->actingAs($user2)->post(route('chat.message', $conversation), [
             'message' => 'Test message from user2',
         ]);
-        
+
         // 参加者はメッセージを送信できる
         $response2->assertRedirect();
 
         $response3 = $this->actingAs($user3)->post(route('chat.message', $conversation), [
             'message' => 'Unauthorized message',
         ]);
-        
+
         // 非参加者はメッセージを送信できない
         $response3->assertStatus(403);
     }
 }
-

@@ -20,7 +20,7 @@ class StripeService
      */
     public function isConfigured(): bool
     {
-        return !empty(config('services.stripe.secret'));
+        return ! empty(config('services.stripe.secret'));
     }
 
     /**
@@ -28,7 +28,7 @@ class StripeService
      */
     public function createPaymentIntent(int $amount, array $metadata = []): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return [
                 'success' => false,
                 'error' => config('app.debug')
@@ -69,7 +69,7 @@ class StripeService
             return [
                 'success' => false,
                 'error' => config('app.debug')
-                    ? '決済処理エラー: ' . $e->getMessage()
+                    ? '決済処理エラー: '.$e->getMessage()
                     : '決済処理の初期化に失敗しました。しばらくしてから再度お試しください。',
             ];
         }
@@ -87,6 +87,7 @@ class StripeService
                 'payment_intent_id' => $paymentIntentId,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -98,7 +99,7 @@ class StripeService
     {
         $intentId = $paymentIntentId ?? $order->stripe_payment_intent_id;
 
-        if (!$intentId) {
+        if (! $intentId) {
             return [
                 'verified' => false,
                 'status' => null,
@@ -107,7 +108,7 @@ class StripeService
 
         $paymentIntent = $this->retrievePaymentIntent($intentId);
 
-        if (!$paymentIntent) {
+        if (! $paymentIntent) {
             return [
                 'verified' => false,
                 'status' => null,
@@ -115,13 +116,13 @@ class StripeService
         }
 
         $orderIdInMeta = $paymentIntent->metadata->order_id ?? null;
-        $amountMatches = $paymentIntent->amount_received === (int)($order->total_amount * 100);
-        $intentMatchesOrder = $orderIdInMeta && (int)$orderIdInMeta === $order->id;
-        $intentMatchesStored = !$order->stripe_payment_intent_id || $order->stripe_payment_intent_id === $intentId;
+        $amountMatches = $paymentIntent->amount_received === (int) ($order->total_amount * 100);
+        $intentMatchesOrder = $orderIdInMeta && (int) $orderIdInMeta === $order->id;
+        $intentMatchesStored = ! $order->stripe_payment_intent_id || $order->stripe_payment_intent_id === $intentId;
 
-        $verified = $paymentIntent->status === 'succeeded' 
-            && $amountMatches 
-            && $intentMatchesOrder 
+        $verified = $paymentIntent->status === 'succeeded'
+            && $amountMatches
+            && $intentMatchesOrder
             && $intentMatchesStored;
 
         return [
@@ -152,7 +153,7 @@ class StripeService
         }
 
         if (config('app.debug')) {
-            return '支払い処理の作成に失敗しました: ' . $e->getMessage();
+            return '支払い処理の作成に失敗しました: '.$e->getMessage();
         }
 
         return '支払い処理の作成に失敗しました。カード情報を確認して再度お試しください。';
@@ -163,7 +164,7 @@ class StripeService
      */
     public function toStripeAmount(float $amount): int
     {
-        return (int)($amount * 100);
+        return (int) ($amount * 100);
     }
 
     /**
@@ -174,4 +175,3 @@ class StripeService
         return $amount / 100;
     }
 }
-

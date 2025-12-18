@@ -17,13 +17,13 @@ class LikeController extends Controller
      */
     public function toggle(Product $product)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return back()->with('error', 'いいねするにはログインが必要です。');
         }
 
         $result = $this->engagementService->toggleLike($product, Auth::user());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return response()->json(['error' => $result['error']], 429);
         }
 

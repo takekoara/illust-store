@@ -10,7 +10,6 @@ use App\Models\ProductView;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Storage;
 
 class DemoProductSeeder extends Seeder
 {
@@ -38,12 +37,12 @@ class DemoProductSeeder extends Seeder
             $tags[] = Tag::firstOrCreate(['name' => $tagName]);
         }
         if ($this->command) {
-            $this->command->info(count($tags) . '個のタグを準備しました。');
+            $this->command->info(count($tags).'個のタグを準備しました。');
         }
 
         // 管理者ユーザーを取得（なければ作成）
         $adminUser = User::where('is_admin', true)->first();
-        if (!$adminUser) {
+        if (! $adminUser) {
             $adminUser = User::factory()->create([
                 'name' => 'Demo Admin',
                 'email' => 'demo@example.com',
@@ -71,7 +70,7 @@ class DemoProductSeeder extends Seeder
         // 商品を生成
         for ($i = 0; $i < $productCount; $i++) {
             $user = $users->random();
-            
+
             $product = Product::factory()->create([
                 'user_id' => $user->id,
                 'views' => fake()->numberBetween(0, 5000),
@@ -82,8 +81,8 @@ class DemoProductSeeder extends Seeder
             $imageCount = fake()->numberBetween(1, 3);
             for ($j = 0; $j < $imageCount; $j++) {
                 // プレースホルダー画像のパス（後で実際の画像に置き換え可能）
-                $imagePath = 'products/placeholder-' . fake()->numberBetween(1, 10) . '.jpg';
-                
+                $imagePath = 'products/placeholder-'.fake()->numberBetween(1, 10).'.jpg';
+
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image_path' => $imagePath,
@@ -137,7 +136,7 @@ class DemoProductSeeder extends Seeder
             $bar->finish();
             $this->command->newLine();
             $this->command->info("✅ {$productCount}個の商品を生成しました！");
-            $this->command->info("✅ エンゲージメントデータ（いいね、ブックマーク、閲覧履歴）も生成しました。");
+            $this->command->info('✅ エンゲージメントデータ（いいね、ブックマーク、閲覧履歴）も生成しました。');
         }
     }
 }

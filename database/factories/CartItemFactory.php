@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -25,4 +24,3 @@ class CartItemFactory extends Factory
         ];
     }
 }
-

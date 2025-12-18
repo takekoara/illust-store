@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -54,7 +53,7 @@ class ProductFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'title' => fake()->randomElement($titles) . ' ' . fake()->numberBetween(1, 1000),
+            'title' => fake()->randomElement($titles).' '.fake()->numberBetween(1, 1000),
             'description' => fake()->randomElement($descriptions),
             'price' => fake()->randomFloat(2, 100, 10000),
             'sort_order' => 0,

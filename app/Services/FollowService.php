@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Follow;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
 class FollowService
 {
@@ -106,4 +105,3 @@ class FollowService
         return Follow::where('follower_id', $user->id)->count();
     }
 }
-

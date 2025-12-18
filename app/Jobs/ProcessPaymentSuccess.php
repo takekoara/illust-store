@@ -39,22 +39,25 @@ class ProcessPaymentSuccess implements ShouldQueue
                 'payment_intent_id' => $this->paymentIntentId,
                 'error' => $e->getMessage(),
             ]);
+
             return;
         }
 
-        if (!$this->orderId) {
+        if (! $this->orderId) {
             Log::warning('ProcessPaymentSuccess: No order ID in metadata', [
                 'payment_intent_id' => $this->paymentIntentId,
             ]);
+
             return;
         }
 
         $order = Order::find($this->orderId);
-        if (!$order) {
+        if (! $order) {
             Log::warning('ProcessPaymentSuccess: Order not found', [
                 'order_id' => $this->orderId,
                 'payment_intent_id' => $this->paymentIntentId,
             ]);
+
             return;
         }
 
@@ -63,15 +66,16 @@ class ProcessPaymentSuccess implements ShouldQueue
                 'order_id' => $order->id,
                 'status' => $order->status,
             ]);
+
             return;
         }
 
         $amountMatches = $paymentIntent->amount_received === (int) ($order->total_amount * 100);
-        $intentMatchesOrder = (string)($paymentIntent->metadata->order_id ?? '') === (string) $order->id;
-        $intentMatchesStored = !$order->stripe_payment_intent_id || $order->stripe_payment_intent_id === $this->paymentIntentId;
+        $intentMatchesOrder = (string) ($paymentIntent->metadata->order_id ?? '') === (string) $order->id;
+        $intentMatchesStored = ! $order->stripe_payment_intent_id || $order->stripe_payment_intent_id === $this->paymentIntentId;
         $isSucceeded = $paymentIntent->status === 'succeeded';
 
-        if (!($amountMatches && $intentMatchesOrder && $intentMatchesStored && $isSucceeded)) {
+        if (! ($amountMatches && $intentMatchesOrder && $intentMatchesStored && $isSucceeded)) {
             Log::warning('ProcessPaymentSuccess: Payment intent validation failed', [
                 'order_id' => $order->id,
                 'payment_intent_id' => $this->paymentIntentId,
@@ -82,6 +86,7 @@ class ProcessPaymentSuccess implements ShouldQueue
                 'amount_received' => $paymentIntent->amount_received,
                 'order_total_expected' => (int) ($order->total_amount * 100),
             ]);
+
             return;
         }
 

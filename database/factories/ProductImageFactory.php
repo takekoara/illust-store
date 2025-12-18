@@ -11,8 +11,8 @@ class ProductImageFactory extends Factory
     {
         return [
             'product_id' => Product::factory(),
-            'image_path' => 'products/' . fake()->uuid() . '.avif',
-            'thumbnail_path' => 'products/thumbnails/' . fake()->uuid() . '.avif',
+            'image_path' => 'products/'.fake()->uuid().'.avif',
+            'thumbnail_path' => 'products/thumbnails/'.fake()->uuid().'.avif',
             'sort_order' => fake()->numberBetween(0, 10),
             'is_primary' => false,
         ];
@@ -25,4 +25,3 @@ class ProductImageFactory extends Factory
         ]);
     }
 }
-

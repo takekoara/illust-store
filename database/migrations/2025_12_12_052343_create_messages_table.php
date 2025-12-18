@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('message');
             $table->boolean('is_read')->default(false);
             $table->timestamps();
-            
+
             $table->index(['conversation_id', 'created_at']);
             $table->index(['user_id', 'is_read']);
         });

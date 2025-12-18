@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductStoreRequest;
 use App\Http\Requests\ProductUpdateRequest;
-use App\Models\Bookmark;
-use App\Models\Like;
 use App\Models\Product;
 use App\Models\Tag;
 use App\Services\EngagementService;
@@ -50,10 +48,10 @@ class ProductController extends Controller
 
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%')
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%')
                     ->orWhereHas('tags', function ($tagQuery) use ($request) {
-                        $tagQuery->where('name', 'like', '%' . $request->search . '%');
+                        $tagQuery->where('name', 'like', '%'.$request->search.'%');
                     });
             });
         }
@@ -80,14 +78,14 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             if (config('app.debug')) {
                 Log::warning('ProductController::create - Access denied', ['user_id' => $user->id]);
             }
             abort(403, '管理者のみが商品を投稿できます。');
         }
 
-        $tags = Cache::remember('tags.all', 3600, fn() => Tag::all());
+        $tags = Cache::remember('tags.all', 3600, fn () => Tag::all());
 
         return Inertia::render('Products/Create', [
             'tags' => $tags,
@@ -174,6 +172,7 @@ class ProductController extends Controller
                 ? $request->boolean('is_active')
                 : $request->boolean('data.is_active');
             $product->update(['is_active' => $isActive]);
+
             return back()->with('success', '商品のステータスが更新されました。');
         }
 
@@ -224,7 +223,7 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             if (config('app.debug')) {
                 Log::warning('ProductController::myProducts - Access denied', ['user_id' => $user->id]);
             }
@@ -238,10 +237,10 @@ class ProductController extends Controller
 
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%')
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%')
                     ->orWhereHas('tags', function ($tagQuery) use ($request) {
-                        $tagQuery->where('name', 'like', '%' . $request->search . '%');
+                        $tagQuery->where('name', 'like', '%'.$request->search.'%');
                     });
             });
         }

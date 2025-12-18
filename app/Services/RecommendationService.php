@@ -12,23 +12,28 @@ class RecommendationService
 {
     // 推薦アルゴリズムの重み定数
     private const TAG_SIMILARITY_WEIGHT = 40;
+
     private const ENGAGEMENT_WEIGHT = 30;
+
     private const VIEW_HISTORY_WEIGHT = 20;
+
     private const PURCHASE_HISTORY_WEIGHT = 10;
 
     // エンゲージメント指標の重み
     private const LIKE_WEIGHT = 1.0;
+
     private const BOOKMARK_WEIGHT = 1.5;
+
     private const VIEW_WEIGHT = 0.5;
+
     private const ENGAGEMENT_DIVISOR = 3.0;
 
     /**
      * ハイブリッド推薦アルゴリズム（重み付けスコアリング）
      *
-     * @param Product $product 現在の商品
-     * @param User|null $user ログインユーザー（nullの場合は未ログイン）
-     * @param int $limit 取得件数
-     * @return Collection
+     * @param  Product  $product  現在の商品
+     * @param  User|null  $user  ログインユーザー（nullの場合は未ログイン）
+     * @param  int  $limit  取得件数
      */
     public function getRecommendedProducts(Product $product, ?User $user = null, int $limit = 4): Collection
     {
@@ -86,7 +91,7 @@ class RecommendationService
      */
     private function getViewedProductIds(?User $user, int $excludeProductId): array
     {
-        if (!$user) {
+        if (! $user) {
             return [];
         }
 
@@ -102,7 +107,7 @@ class RecommendationService
      */
     private function getPurchasedProductIds(?User $user): array
     {
-        if (!$user) {
+        if (! $user) {
             return [];
         }
 
@@ -110,7 +115,7 @@ class RecommendationService
             ->where('status', 'completed')
             ->with('items')
             ->get()
-            ->flatMap(fn($order) => $order->items->pluck('product_id'))
+            ->flatMap(fn ($order) => $order->items->pluck('product_id'))
             ->unique()
             ->toArray();
     }
@@ -195,4 +200,3 @@ class RecommendationService
         return $engagementScore * self::ENGAGEMENT_WEIGHT;
     }
 }
-

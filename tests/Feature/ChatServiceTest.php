@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Conversation;
-use App\Models\Message;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\ChatService;
@@ -88,4 +87,3 @@ class ChatServiceTest extends TestCase
         $this->assertNotNull($conversation->fresh()->last_message_at);
     }
 }
-

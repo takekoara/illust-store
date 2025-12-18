@@ -31,7 +31,7 @@ class OrderController extends Controller
                 $query->with(['product' => function ($q) {
                     $q->withTrashed()->with('images');
                 }]);
-            }
+            },
         ])
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
@@ -51,11 +51,12 @@ class OrderController extends Controller
 
         // カートの検証
         $validation = $this->cartService->validateForCheckout();
-        if (!$validation['valid']) {
+        if (! $validation['valid']) {
             Log::warning('Cart validation failed', [
                 'user_id' => Auth::id(),
                 'message' => $validation['message'],
             ]);
+
             return redirect()->route('cart.index')->with('error', $validation['message']);
         }
 
@@ -78,6 +79,7 @@ class OrderController extends Controller
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
             ]);
+
             return redirect()->route('cart.index')
                 ->with('error', '注文の作成に失敗しました。しばらくしてから再度お試しください。');
         }
@@ -92,8 +94,9 @@ class OrderController extends Controller
             ]
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             $tempOrder->delete();
+
             return redirect()->route('cart.index')->with('error', $result['error']);
         }
 
@@ -161,7 +164,7 @@ class OrderController extends Controller
 
         $order = Order::find($request->temp_order_id);
 
-        if (!$order || $order->user_id !== Auth::id() || $order->status !== 'pending') {
+        if (! $order || $order->user_id !== Auth::id() || $order->status !== 'pending') {
             return response()->json([
                 'message' => '注文が見つからないか、キャンセルできません。',
             ], 404);
@@ -227,7 +230,7 @@ class OrderController extends Controller
                     $q->withTrashed()->with('images');
                 }]);
             },
-            'user'
+            'user',
         ]);
 
         Log::info('Order items loaded', [

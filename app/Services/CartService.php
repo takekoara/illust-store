@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class CartService
 {
@@ -25,7 +24,7 @@ class CartService
     public function getCartTotal($cartItems = null)
     {
         $items = $cartItems ?? $this->getCartItems();
-        
+
         return $items->sum(function ($item) {
             return $item->product->price;
         });
@@ -33,7 +32,7 @@ class CartService
 
     /**
      * Add product to cart
-     * 
+     *
      * @throws \Exception
      */
     public function addToCart(int $productId): array
@@ -41,7 +40,7 @@ class CartService
         $product = Product::findOrFail($productId);
 
         // 商品がアクティブかチェック
-        if (!$product->is_active) {
+        if (! $product->is_active) {
             return [
                 'success' => false,
                 'type' => 'error',
@@ -118,7 +117,7 @@ class CartService
         }
 
         $invalidItems = $items->filter(function ($item) {
-            return !$item->product || !$item->product->is_active || $item->product->price <= 0;
+            return ! $item->product || ! $item->product->is_active || $item->product->price <= 0;
         });
 
         if ($invalidItems->isNotEmpty()) {
@@ -144,4 +143,3 @@ class CartService
         ];
     }
 }
-

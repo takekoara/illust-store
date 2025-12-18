@@ -39,7 +39,7 @@ class ChatService
                 'product:id,title,price',
                 'messages' => function ($query) {
                     $query->latest()->limit(1)->with('user:id,name,username');
-                }
+                },
             ])
             ->orderBy('last_message_at', 'desc')
             ->get()
@@ -47,6 +47,7 @@ class ChatService
                 $otherUser = $userId === $conversation->user_one_id
                     ? $conversation->userTwo
                     : $conversation->userOne;
+
                 return [
                     'id' => $conversation->id,
                     'type' => $conversation->type,
@@ -103,7 +104,7 @@ class ChatService
             ->betweenUsers($currentUser->id, $otherUser->id)
             ->first();
 
-        if (!$conversation) {
+        if (! $conversation) {
             $conversation = Conversation::create([
                 'user_one_id' => $currentUser->id,
                 'user_two_id' => $otherUser->id,
@@ -127,7 +128,7 @@ class ChatService
             ->betweenUsers($buyer->id, $seller->id)
             ->first();
 
-        if (!$conversation) {
+        if (! $conversation) {
             $conversation = Conversation::create([
                 'user_one_id' => $buyer->id,
                 'user_two_id' => $seller->id,
@@ -172,7 +173,7 @@ class ChatService
                 broadcast($event);
             } catch (\Exception $e) {
                 if (config('app.debug')) {
-                    Log::error('Broadcast error: ' . $e->getMessage(), [
+                    Log::error('Broadcast error: '.$e->getMessage(), [
                         'conversation_id' => $event->message->conversation_id,
                         'message_id' => $event->message->id,
                     ]);

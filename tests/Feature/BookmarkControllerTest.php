@@ -56,8 +56,8 @@ class BookmarkControllerTest extends TestCase
         $user = User::factory()->create();
         $product = Product::factory()->create();
 
-        $key = 'toggle-bookmark:' . $user->id;
-        
+        $key = 'toggle-bookmark:'.$user->id;
+
         // レート制限を超えるまでブックマークを実行
         for ($i = 0; $i < 60; $i++) {
             RateLimiter::hit($key, 60);
@@ -77,8 +77,8 @@ class BookmarkControllerTest extends TestCase
 
         // ゲストはログインページにリダイレクトされるか、エラーメッセージが返される
         $this->assertTrue(
-            $response->isRedirect() || 
-            $response->status() === 401 || 
+            $response->isRedirect() ||
+            $response->status() === 401 ||
             $response->status() === 403
         );
     }
@@ -87,7 +87,7 @@ class BookmarkControllerTest extends TestCase
     {
         $user = User::factory()->create();
         $products = Product::factory()->count(3)->create();
-        
+
         foreach ($products as $product) {
             Bookmark::factory()->create([
                 'user_id' => $user->id,
@@ -118,4 +118,3 @@ class BookmarkControllerTest extends TestCase
         ]);
     }
 }
-

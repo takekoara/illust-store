@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 class WelcomeService
 {
     private const PRODUCTS_LIMIT = 12;
+
     private const TAGS_CACHE_TTL = 3600;
 
     /**
@@ -50,8 +51,8 @@ class WelcomeService
     {
         return Cache::remember('popular_tags', self::TAGS_CACHE_TTL, function () {
             return Tag::whereHas('products', function ($query) {
-                    $query->where('is_active', true);
-                })
+                $query->where('is_active', true);
+            })
                 ->withCount(['products' => function ($query) {
                     $query->where('is_active', true);
                 }])
@@ -61,4 +62,3 @@ class WelcomeService
         });
     }
 }
-

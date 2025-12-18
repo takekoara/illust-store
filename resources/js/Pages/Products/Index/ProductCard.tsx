@@ -64,11 +64,11 @@ function ProductCardUser({ user }: ProductCardUserProps) {
 
 interface ProductCardPriceStatsProps {
     price: number;
-    views: number;
-    salesCount: number;
+    views?: number;
+    salesCount?: number;
 }
 
-function ProductCardPriceStats({ price, views, salesCount }: ProductCardPriceStatsProps) {
+function ProductCardPriceStats({ price, views = 0, salesCount = 0 }: ProductCardPriceStatsProps) {
     return (
         <div className="flex items-center justify-between">
             <span className="text-xl font-bold text-indigo-600">

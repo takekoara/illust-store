@@ -34,7 +34,7 @@ class ProductViewService
             ->where('viewed_at', '>', now()->subHour())
             ->exists();
 
-        if (!$recentView) {
+        if (! $recentView) {
             ProductView::create([
                 'user_id' => $user->id,
                 'product_id' => $product->id,
@@ -55,7 +55,7 @@ class ProductViewService
             ->where('viewed_at', '>', now()->subHour())
             ->exists();
 
-        if (!$recentView) {
+        if (! $recentView) {
             ProductView::create([
                 'user_id' => null,
                 'product_id' => $product->id,
@@ -65,4 +65,3 @@ class ProductViewService
         }
     }
 }
-

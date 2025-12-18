@@ -51,17 +51,17 @@ class OrderCompletedNotification extends Notification // implements ShouldQueue
                 $query->with(['product' => function ($q) {
                     $q->withTrashed()->with('images');
                 }]);
-            }
+            },
         ]);
 
         $mailMessage = (new MailMessage)
-            ->subject('注文が完了しました - ' . $order->order_number)
-            ->greeting('こんにちは、' . $notifiable->name . 'さん')
+            ->subject('注文が完了しました - '.$order->order_number)
+            ->greeting('こんにちは、'.$notifiable->name.'さん')
             ->line('ご注文ありがとうございます。')
             ->line('以下の注文が正常に完了しました。')
-            ->line('**注文番号:** ' . $order->order_number)
-            ->line('**注文日時:** ' . $order->created_at->format('Y年m月d日 H:i'))
-            ->line('**合計金額:** ¥' . number_format($order->total_amount, 0))
+            ->line('**注文番号:** '.$order->order_number)
+            ->line('**注文日時:** '.$order->created_at->format('Y年m月d日 H:i'))
+            ->line('**合計金額:** ¥'.number_format($order->total_amount, 0))
             ->line('**ステータス:** 完了');
 
         // 注文商品の詳細を追加
@@ -69,7 +69,7 @@ class OrderCompletedNotification extends Notification // implements ShouldQueue
             $mailMessage->line('**注文内容:**');
             foreach ($order->items as $item) {
                 $productTitle = $item->product ? $item->product->title : '商品情報が取得できませんでした';
-                $mailMessage->line('- ' . $productTitle . ' (¥' . number_format($item->price, 0) . ')');
+                $mailMessage->line('- '.$productTitle.' (¥'.number_format($item->price, 0).')');
             }
         }
 
@@ -78,13 +78,13 @@ class OrderCompletedNotification extends Notification // implements ShouldQueue
             $billing = $order->billing_address;
             $mailMessage
                 ->line('**請求先情報:**')
-                ->line('お名前: ' . ($billing['name'] ?? ''))
-                ->line('メールアドレス: ' . ($billing['email'] ?? ''))
-                ->line('住所: ' . ($billing['address'] ?? '') . ' ' . ($billing['city'] ?? '') . ' ' . ($billing['postal_code'] ?? ''));
+                ->line('お名前: '.($billing['name'] ?? ''))
+                ->line('メールアドレス: '.($billing['email'] ?? ''))
+                ->line('住所: '.($billing['address'] ?? '').' '.($billing['city'] ?? '').' '.($billing['postal_code'] ?? ''));
         }
 
         $mailMessage
-            ->action('注文詳細を確認', url('/orders/' . $order->id))
+            ->action('注文詳細を確認', url('/orders/'.$order->id))
             ->line('ご不明な点がございましたら、お気軽にお問い合わせください。')
             ->line('今後ともよろしくお願いいたします。');
 

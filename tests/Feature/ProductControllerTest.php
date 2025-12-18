@@ -132,12 +132,12 @@ class ProductControllerTest extends TestCase
         $response = $this->actingAs($admin)->delete(route('products.destroy', $product));
 
         $response->assertRedirect(route('products.index'));
-        
+
         // SoftDeletesを使用しているため、deleted_atが設定される
         $product->refresh();
         $this->assertNotNull($product->deleted_at);
         $this->assertSoftDeleted('products', ['id' => $product->id]);
-        
+
         // 画像ファイルが削除されることを確認（データベースの画像レコードは外部キー制約で削除される可能性がある）
         // 実際のコントローラーでは画像ファイルのみ削除し、レコードは外部キー制約で削除される
         $this->assertFalse(Storage::disk('public')->exists('test/image.jpg'));
@@ -173,4 +173,3 @@ class ProductControllerTest extends TestCase
         );
     }
 }
-

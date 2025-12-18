@@ -43,7 +43,7 @@ class SearchServiceTest extends TestCase
     public function test_search_returns_empty_results_for_empty_query(): void
     {
         $results = $this->service->search('', 'all');
-        
+
         $this->assertEmpty($results['products']);
         $this->assertEmpty($results['users']);
         $this->assertEmpty($results['tags']);
@@ -212,4 +212,3 @@ class SearchServiceTest extends TestCase
         $this->assertCount(20, $results['products']); // PRODUCTS_LIMIT = 20
     }
 }
-

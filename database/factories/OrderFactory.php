@@ -20,7 +20,7 @@ class OrderFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'order_number' => 'ORD-' . strtoupper(fake()->unique()->bothify('##########')),
+            'order_number' => 'ORD-'.strtoupper(fake()->unique()->bothify('##########')),
             'total_amount' => fake()->randomFloat(2, 100, 10000),
             'status' => 'pending',
             'stripe_payment_intent_id' => null,
@@ -43,4 +43,3 @@ class OrderFactory extends Factory
         ]);
     }
 }
-

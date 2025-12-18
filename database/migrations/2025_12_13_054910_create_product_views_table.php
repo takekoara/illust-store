@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('viewed_at');
             $table->string('ip_address', 45)->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'viewed_at']);
             $table->index(['product_id', 'viewed_at']);
             $table->index('viewed_at');

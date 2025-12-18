@@ -21,7 +21,7 @@ return new class extends Migration
             $table->boolean('is_read')->default(false);
             $table->json('data')->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'is_read']);
             $table->index('created_at');
         });

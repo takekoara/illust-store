@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('sales_count')->default(0);
             $table->timestamps();
             $table->softDeletes();
-            
+
             $table->index(['user_id', 'is_active']);
             $table->index('sort_order');
         });

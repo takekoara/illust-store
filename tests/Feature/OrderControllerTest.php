@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Jobs\ProcessPaymentSuccess;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -65,7 +64,7 @@ class OrderControllerTest extends TestCase
         $this->app->instance(StripeService::class, $mockStripeService);
 
         $response = $this->actingAs($user)->get(
-            route('orders.show', $order) . '?payment_intent=pi_fake&redirect_status=succeeded'
+            route('orders.show', $order).'?payment_intent=pi_fake&redirect_status=succeeded'
         );
 
         $response->assertOk();
@@ -111,7 +110,7 @@ class OrderControllerTest extends TestCase
         $this->app->instance(StripeService::class, $mockStripeService);
 
         $response = $this->actingAs($user)->get(
-            route('orders.show', $order) . '?payment_intent=pi_success&redirect_status=succeeded'
+            route('orders.show', $order).'?payment_intent=pi_success&redirect_status=succeeded'
         );
 
         $response->assertOk();

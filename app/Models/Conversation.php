@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Conversation extends Model
 {
@@ -52,7 +52,7 @@ class Conversation extends Model
         // 小さいIDをuser_one_id、大きいIDをuser_two_idとして検索
         $minId = min($userId1, $userId2);
         $maxId = max($userId1, $userId2);
-        
+
         return $query->where('user_one_id', $minId)
             ->where('user_two_id', $maxId);
     }
@@ -64,7 +64,7 @@ class Conversation extends Model
     {
         return $query->where(function ($q) use ($userId) {
             $q->where('user_one_id', $userId)
-              ->orWhere('user_two_id', $userId);
+                ->orWhere('user_two_id', $userId);
         });
     }
 

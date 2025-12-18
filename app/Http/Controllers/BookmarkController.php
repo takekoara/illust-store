@@ -18,13 +18,13 @@ class BookmarkController extends Controller
      */
     public function toggle(Product $product)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return back()->with('error', 'ブックマークするにはログインが必要です。');
         }
 
         $result = $this->engagementService->toggleBookmark($product, Auth::user());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return response()->json(['error' => $result['error']], 429);
         }
 

@@ -10,8 +10,11 @@ use Illuminate\Support\Collection;
 class SearchService
 {
     private const MAX_QUERY_LENGTH = 100;
+
     private const PRODUCTS_LIMIT = 20;
+
     private const USERS_LIMIT = 10;
+
     private const TAGS_LIMIT = 10;
 
     /**
@@ -21,6 +24,7 @@ class SearchService
     {
         $query = trim($query);
         $query = strip_tags($query);
+
         return mb_substr($query, 0, self::MAX_QUERY_LENGTH);
     }
 
@@ -62,10 +66,10 @@ class SearchService
         return Product::with(['user', 'images', 'tags'])
             ->where('is_active', true)
             ->where(function ($q) use ($query) {
-                $q->where('title', 'like', '%' . $query . '%')
-                    ->orWhere('description', 'like', '%' . $query . '%')
+                $q->where('title', 'like', '%'.$query.'%')
+                    ->orWhere('description', 'like', '%'.$query.'%')
                     ->orWhereHas('tags', function ($tagQuery) use ($query) {
-                        $tagQuery->where('name', 'like', '%' . $query . '%');
+                        $tagQuery->where('name', 'like', '%'.$query.'%');
                     });
             })
             ->orderBy('created_at', 'desc')
@@ -79,9 +83,9 @@ class SearchService
     public function searchUsers(string $query): Collection
     {
         return User::where(function ($q) use ($query) {
-                $q->where('name', 'like', '%' . $query . '%')
-                    ->orWhere('username', 'like', '%' . $query . '%');
-            })
+            $q->where('name', 'like', '%'.$query.'%')
+                ->orWhere('username', 'like', '%'.$query.'%');
+        })
             ->limit(self::USERS_LIMIT)
             ->get();
     }
@@ -91,9 +95,8 @@ class SearchService
      */
     public function searchTags(string $query): Collection
     {
-        return Tag::where('name', 'like', '%' . $query . '%')
+        return Tag::where('name', 'like', '%'.$query.'%')
             ->limit(self::TAGS_LIMIT)
             ->get();
     }
 }
-

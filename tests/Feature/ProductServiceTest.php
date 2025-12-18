@@ -3,10 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Models\ProductImage;
 use App\Models\Tag;
 use App\Models\User;
-use App\Services\ImageService;
 use App\Services\ProductService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

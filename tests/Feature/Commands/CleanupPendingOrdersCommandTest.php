@@ -36,4 +36,3 @@ class CleanupPendingOrdersCommandTest extends TestCase
         $this->assertSame('pending', $recent->fresh()->status);
     }
 }
-

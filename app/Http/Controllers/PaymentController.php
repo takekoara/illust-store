@@ -36,6 +36,7 @@ class PaymentController extends Controller
                 'order_id' => $order->id,
                 'amount' => $order->total_amount,
             ]);
+
             return back()->with('error', '注文金額が無効です。');
         }
 
@@ -47,7 +48,7 @@ class PaymentController extends Controller
             ]
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return back()->with('error', $result['error']);
         }
 
@@ -70,10 +71,12 @@ class PaymentController extends Controller
         try {
             $event = Webhook::constructEvent($payload, $sigHeader, $endpointSecret);
         } catch (\UnexpectedValueException $e) {
-            Log::error('Invalid payload: ' . $e->getMessage());
+            Log::error('Invalid payload: '.$e->getMessage());
+
             return response()->json(['error' => 'Invalid payload'], 400);
         } catch (SignatureVerificationException $e) {
-            Log::error('Invalid signature: ' . $e->getMessage());
+            Log::error('Invalid signature: '.$e->getMessage());
+
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
@@ -104,7 +107,7 @@ class PaymentController extends Controller
                 break;
 
             default:
-                Log::info('Unhandled event type: ' . $event->type);
+                Log::info('Unhandled event type: '.$event->type);
         }
 
         return response()->json(['received' => true]);

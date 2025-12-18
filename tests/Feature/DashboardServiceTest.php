@@ -43,7 +43,7 @@ class DashboardServiceTest extends TestCase
         $this->assertArrayHasKey('pending_orders', $stats);
         $this->assertArrayHasKey('recent_orders', $stats);
         $this->assertArrayHasKey('recent_products', $stats);
-        
+
         $this->assertEquals(7, $stats['total_products']);
         $this->assertEquals(5, $stats['active_products']);
         $this->assertEquals(4, $stats['total_users']); // admin + 3 users
@@ -71,13 +71,13 @@ class DashboardServiceTest extends TestCase
     {
         // Arrange
         Cache::forget('dashboard.stats.admin');
-        
+
         // Act
         $stats1 = $this->service->getAdminStats();
-        
+
         // Create more data after first call
         User::factory()->count(5)->create();
-        
+
         $stats2 = $this->service->getAdminStats();
 
         // Assert - cached values should be the same
@@ -88,7 +88,7 @@ class DashboardServiceTest extends TestCase
     {
         // Arrange
         Cache::put('dashboard.stats.admin', ['test' => 'data'], 300);
-        
+
         // Act
         $this->service->clearAdminStatsCache();
 
@@ -101,7 +101,7 @@ class DashboardServiceTest extends TestCase
         // Arrange
         $user = User::factory()->create();
         $admin = User::factory()->create(['is_admin' => true]);
-        
+
         Product::factory()->count(3)->create(['user_id' => $user->id, 'is_active' => true]);
         Product::factory()->count(1)->create(['user_id' => $user->id, 'is_active' => false]);
         Order::factory()->count(2)->create(['user_id' => $user->id]);
@@ -129,7 +129,7 @@ class DashboardServiceTest extends TestCase
         // Arrange
         $user = User::factory()->create();
         $followers = User::factory()->count(3)->create();
-        
+
         foreach ($followers as $follower) {
             $user->followers()->attach($follower->id);
         }
@@ -147,7 +147,7 @@ class DashboardServiceTest extends TestCase
         $user = User::factory()->create();
         $admin = User::factory()->create(['is_admin' => true]);
         $products = Product::factory()->count(3)->create(['user_id' => $admin->id]);
-        
+
         foreach ($products as $product) {
             Bookmark::factory()->create([
                 'user_id' => $user->id,
@@ -167,13 +167,13 @@ class DashboardServiceTest extends TestCase
         // Arrange
         $user = User::factory()->create();
         $admin = User::factory()->create(['is_admin' => true]);
-        
+
         $product1 = Product::factory()->create(['user_id' => $admin->id]);
         $product2 = Product::factory()->create(['user_id' => $admin->id]);
-        
+
         Bookmark::factory()->create(['user_id' => $user->id, 'product_id' => $product1->id]);
         Bookmark::factory()->create(['user_id' => $user->id, 'product_id' => $product2->id]);
-        
+
         // Soft delete one product
         $product1->delete();
 
@@ -190,7 +190,7 @@ class DashboardServiceTest extends TestCase
         $user = User::factory()->create();
         $admin = User::factory()->create(['is_admin' => true]);
         $products = Product::factory()->count(10)->create(['user_id' => $admin->id]);
-        
+
         foreach ($products as $product) {
             Bookmark::factory()->create([
                 'user_id' => $user->id,
@@ -211,7 +211,7 @@ class DashboardServiceTest extends TestCase
         $user = User::factory()->create();
         $admin = User::factory()->create(['is_admin' => true]);
         $product = Product::factory()->create(['user_id' => $admin->id]);
-        
+
         $order = Order::factory()->create(['user_id' => $user->id]);
         $order->items()->create([
             'product_id' => $product->id,
@@ -229,4 +229,3 @@ class DashboardServiceTest extends TestCase
         $this->assertTrue($stats['recent_orders']->first()->relationLoaded('items'));
     }
 }
-

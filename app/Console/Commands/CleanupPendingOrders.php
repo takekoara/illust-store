@@ -45,4 +45,3 @@ class CleanupPendingOrders extends Command
         return Command::SUCCESS;
     }
 }
-

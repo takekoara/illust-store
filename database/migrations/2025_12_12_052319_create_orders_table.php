@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('stripe_customer_id')->nullable();
             $table->json('billing_address')->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'status']);
             $table->index('order_number');
         });
