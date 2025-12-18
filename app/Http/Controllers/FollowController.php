@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Follow;
 use App\Models\User;
-use App\Services\NotificationService;
+use App\Services\FollowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class FollowController extends Controller
 {
+    public function __construct(
+        private readonly FollowService $followService
+    ) {}
+
     /**
      * Follow a user
      */
@@ -19,30 +23,10 @@ class FollowController extends Controller
             'user_id' => 'required|exists:users,id',
         ]);
 
-        if ($validated['user_id'] === Auth::id()) {
-            return back()->with('error', '自分自身をフォローすることはできません。');
-        }
+        $following = User::findOrFail($validated['user_id']);
+        $result = $this->followService->follow(Auth::user(), $following);
 
-        $existingFollow = Follow::where('follower_id', Auth::id())
-            ->where('following_id', $validated['user_id'])
-            ->first();
-
-        if ($existingFollow) {
-            return back()->with('error', '既にフォローしています。');
-        }
-
-        $followed = User::findOrFail($validated['user_id']);
-        
-        Follow::create([
-            'follower_id' => Auth::id(),
-            'following_id' => $validated['user_id'],
-        ]);
-
-        // 通知を送信
-        $notificationService = app(NotificationService::class);
-        $notificationService->notifyFollow($followed, Auth::user());
-
-        return back()->with('success', 'フォローしました。');
+        return back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
     /**
@@ -50,11 +34,9 @@ class FollowController extends Controller
      */
     public function destroy(User $user)
     {
-        Follow::where('follower_id', Auth::id())
-            ->where('following_id', $user->id)
-            ->delete();
+        $result = $this->followService->unfollow(Auth::user(), $user);
 
-        return back()->with('success', 'フォローを解除しました。');
+        return back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
     /**
@@ -62,9 +44,9 @@ class FollowController extends Controller
      */
     public function followers(User $user)
     {
-        $followers = $user->followers()->paginate(20);
+        $followers = $this->followService->getFollowers($user);
 
-        return \Inertia\Inertia::render('Users/Followers', [
+        return Inertia::render('Users/Followers', [
             'user' => $user,
             'followers' => $followers,
         ]);
@@ -75,9 +57,9 @@ class FollowController extends Controller
      */
     public function following(User $user)
     {
-        $following = $user->following()->paginate(20);
+        $following = $this->followService->getFollowing($user);
 
-        return \Inertia\Inertia::render('Users/Following', [
+        return Inertia::render('Users/Following', [
             'user' => $user,
             'following' => $following,
         ]);

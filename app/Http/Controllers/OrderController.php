@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CartItem;
 use App\Models\Order;
+use App\Services\CartService;
 use App\Services\OrderService;
+use App\Services\StripeService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
 
 class OrderController extends Controller
 {
-    public function __construct(private readonly OrderService $orderService)
-    {
-    }
+    public function __construct(
+        private readonly OrderService $orderService,
+        private readonly CartService $cartService,
+        private readonly StripeService $stripeService
+    ) {}
 
     /**
      * Display a listing of orders
@@ -48,43 +49,22 @@ class OrderController extends Controller
     {
         Log::info('Order create method called', ['user_id' => Auth::id()]);
 
-        $cartItems = CartItem::with(['product.images', 'product.user'])
-            ->where('user_id', Auth::id())
-            ->get();
-
-        if ($cartItems->isEmpty()) {
-            Log::warning('Cart is empty', ['user_id' => Auth::id()]);
-            return redirect()->route('cart.index')
-                ->with('error', 'カートが空です。');
-        }
-
-        // 商品の有効性を決済前に検証
-        $invalidItems = $cartItems->filter(function ($item) {
-            return !$item->product || !$item->product->is_active || $item->product->price <= 0;
-        });
-
-        if ($invalidItems->isNotEmpty()) {
-            Log::warning('Invalid items in cart', [
+        // カートの検証
+        $validation = $this->cartService->validateForCheckout();
+        if (!$validation['valid']) {
+            Log::warning('Cart validation failed', [
                 'user_id' => Auth::id(),
-                'invalid_items' => $invalidItems->pluck('id')->toArray(),
+                'message' => $validation['message'],
             ]);
-            return redirect()->route('cart.index')
-                ->with('error', 'カートに無効な商品が含まれています。カートを確認してください。');
+            return redirect()->route('cart.index')->with('error', $validation['message']);
         }
 
-        $total = $cartItems->sum(function ($item) {
-            return $item->product->price;
-        });
+        $cartItems = $validation['items'];
+        $total = $validation['total'];
 
         Log::info('Cart total calculated', ['user_id' => Auth::id(), 'total' => $total]);
 
-        if ($total <= 0) {
-            Log::warning('Invalid total amount', ['user_id' => Auth::id(), 'total' => $total]);
-            return redirect()->route('cart.index')
-                ->with('error', '注文金額が無効です。商品を確認してください。');
-        }
-
-        // Create a temporary order to generate payment intent
+        // 一時注文を作成
         try {
             $tempOrder = Order::create([
                 'user_id' => Auth::id(),
@@ -97,100 +77,37 @@ class OrderController extends Controller
             Log::error('Failed to create temporary order', [
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
             return redirect()->route('cart.index')
                 ->with('error', '注文の作成に失敗しました。しばらくしてから再度お試しください。');
         }
 
-        // Check if Stripe is configured
-        $stripeSecret = config('services.stripe.secret');
-        Log::info('Stripe configuration check', [
+        // Payment Intent を作成
+        $result = $this->stripeService->createPaymentIntent(
+            $this->stripeService->toStripeAmount($total),
+            [
+                'order_id' => $tempOrder->id,
+                'user_id' => Auth::id(),
+                'temp' => true,
+            ]
+        );
+
+        if (!$result['success']) {
+            $tempOrder->delete();
+            return redirect()->route('cart.index')->with('error', $result['error']);
+        }
+
+        Log::info('Stripe Payment Intent created successfully', [
             'order_id' => $tempOrder->id,
-            'stripe_secret_set' => !empty($stripeSecret),
-            'stripe_secret_length' => $stripeSecret ? strlen($stripeSecret) : 0,
+            'payment_intent_id' => $result['paymentIntent']->id,
         ]);
 
-        if (empty($stripeSecret)) {
-            Log::error('Stripe secret key is not configured', [
-                'order_id' => $tempOrder->id,
-                'user_id' => Auth::id(),
-                'config_services_stripe' => config('services.stripe'),
-            ]);
-            $tempOrder->delete();
-            $errorMessage = config('app.debug')
-                ? 'StripeのAPIキーが設定されていません。.envファイルにSTRIPE_SECRETを設定してください。'
-                : '決済処理の初期化に失敗しました。管理者にお問い合わせください。';
-            return redirect()->route('cart.index')
-                ->with('error', $errorMessage);
-        }
-
-        // Create payment intent
-        $clientSecret = null;
-        try {
-            Log::info('Attempting to create Stripe Payment Intent', [
-                'order_id' => $tempOrder->id,
-                'amount' => (int)($total * 100),
-                'currency' => 'jpy',
-            ]);
-
-            Stripe::setApiKey($stripeSecret);
-            $paymentIntent = PaymentIntent::create([
-                'amount' => (int)($total * 100), // Convert to cents
-                'currency' => 'jpy',
-                'metadata' => [
-                    'order_id' => $tempOrder->id,
-                    'user_id' => Auth::id(),
-                    'temp' => true, // Mark as temporary
-                ],
-            ]);
-
-            Log::info('Stripe Payment Intent created successfully', [
-                'order_id' => $tempOrder->id,
-                'payment_intent_id' => $paymentIntent->id,
-            ]);
-
-            $tempOrder->update([
-                'stripe_payment_intent_id' => $paymentIntent->id,
-            ]);
-
-            $clientSecret = $paymentIntent->client_secret;
-        } catch (\Stripe\Exception\ApiErrorException $e) {
-            Log::error('Stripe Payment Intent API Error in create', [
-                'order_id' => $tempOrder->id,
-                'user_id' => Auth::id(),
-                'error' => $e->getMessage(),
-                'stripe_error_code' => $e->getStripeCode(),
-                'stripe_error_type' => $e->getStripeCode(),
-            ]);
-            // Delete temp order if payment intent creation failed
-            $tempOrder->delete();
-            $errorMessage = config('app.debug')
-                ? 'Stripe APIエラー: ' . $e->getMessage() . ' (コード: ' . $e->getStripeCode() . ')'
-                : '決済処理の初期化に失敗しました。しばらくしてから再度お試しください。';
-            return redirect()->route('cart.index')
-                ->with('error', $errorMessage);
-        } catch (\Exception $e) {
-            Log::error('Stripe Payment Intent Error in create', [
-                'order_id' => $tempOrder->id,
-                'user_id' => Auth::id(),
-                'error' => $e->getMessage(),
-                'error_class' => get_class($e),
-                'trace' => config('app.debug') ? $e->getTraceAsString() : null,
-            ]);
-            // Delete temp order if payment intent creation failed
-            $tempOrder->delete();
-            $errorMessage = config('app.debug')
-                ? '決済処理エラー: ' . $e->getMessage()
-                : '注文の作成に失敗しました。しばらくしてから再度お試しください。';
-            return redirect()->route('cart.index')
-                ->with('error', $errorMessage);
-        }
+        $tempOrder->update(['stripe_payment_intent_id' => $result['paymentIntent']->id]);
 
         return Inertia::render('Orders/Create', [
             'cartItems' => $cartItems,
             'total' => $total,
-            'clientSecret' => $clientSecret,
+            'clientSecret' => $result['clientSecret'],
             'tempOrderId' => $tempOrder->id,
         ]);
     }
@@ -217,26 +134,24 @@ class OrderController extends Controller
                 $validated['temp_order_id'] ?? null
             );
 
-        // Return JSON response for frontend
-        return response()->json([
-            'order' => $order,
-            'message' => '注文が作成されました。',
-        ]);
+            return response()->json([
+                'order' => $order,
+                'message' => '注文が作成されました。',
+            ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Order store error', [
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
-                'trace' => config('app.debug') ? $e->getTraceAsString() : null,
             ]);
-            
+
             return back()->with('error', '注文の作成に失敗しました。しばらくしてから再度お試しください。');
         }
     }
 
     /**
-     * Cancel a temporary order (called when payment fails or CSRF error occurs)
+     * Cancel a temporary order
      */
     public function cancelTempOrder(Request $request)
     {
@@ -246,14 +161,12 @@ class OrderController extends Controller
 
         $order = Order::find($request->temp_order_id);
 
-        // Only allow canceling own orders that are pending
         if (!$order || $order->user_id !== Auth::id() || $order->status !== 'pending') {
             return response()->json([
                 'message' => '注文が見つからないか、キャンセルできません。',
             ], 404);
         }
 
-        // Delete the temporary order
         $order->delete();
 
         Log::info('Temporary order cancelled', [
@@ -261,9 +174,7 @@ class OrderController extends Controller
             'user_id' => Auth::id(),
         ]);
 
-        return response()->json([
-            'message' => '一時注文がキャンセルされました。',
-        ]);
+        return response()->json(['message' => '一時注文がキャンセルされました。']);
     }
 
     /**
@@ -275,62 +186,41 @@ class OrderController extends Controller
             abort(403);
         }
 
-        // Check payment status from Stripe using the payment_intent in the query string.
-        // Also check if order has stripe_payment_intent_id and verify status
         $paymentIntentId = request()->query('payment_intent') ?? $order->stripe_payment_intent_id;
-        $redirectStatus = request()->query('redirect_status');
         $paymentVerified = false;
         $stripePaymentStatus = null;
 
         if ($paymentIntentId) {
-            try {
-                Stripe::setApiKey(config('services.stripe.secret'));
-                $paymentIntent = PaymentIntent::retrieve($paymentIntentId);
+            $verification = $this->stripeService->verifyPayment($order, $paymentIntentId);
+            $stripePaymentStatus = $verification['status'];
 
-                $orderIdInMeta = $paymentIntent->metadata->order_id ?? null;
-                $amountMatches = $paymentIntent->amount_received === (int)($order->total_amount * 100);
-                $intentMatchesOrder = $orderIdInMeta && (int)$orderIdInMeta === $order->id;
-                $intentMatchesStored = !$order->stripe_payment_intent_id || $order->stripe_payment_intent_id === $paymentIntentId;
+            if ($verification['verified']) {
+                $paymentVerified = true;
 
-                $stripePaymentStatus = $paymentIntent->status;
+                // 支払いが成功しているが注文がpendingの場合、更新
+                if ($order->status === 'pending') {
+                    Log::info('Updating order status from pending to completed', [
+                        'order_id' => $order->id,
+                        'payment_intent_id' => $paymentIntentId,
+                    ]);
 
-                if ($paymentIntent->status === 'succeeded' && $amountMatches && $intentMatchesOrder && $intentMatchesStored) {
-                    $paymentVerified = true;
-                    
-                    // If order is still pending but payment succeeded, update it
-                    if ($order->status === 'pending') {
-                        Log::info('Updating order status from pending to completed (payment verified)', [
-                            'order_id' => $order->id,
-                            'payment_intent_id' => $paymentIntentId,
-                        ]);
-                        
-                        $order->update([
-                            'status' => 'completed',
-                            'stripe_payment_intent_id' => $paymentIntentId,
-                        ]);
-                        
-                        // Reload order to get fresh data
-                        $order->refresh();
-                        
-                        // Increment product sales count
-                        $order->load('items.product');
-                        foreach ($order->items as $item) {
-                            if ($item->product) {
-                                $item->product->increment('sales_count');
-                            }
+                    $order->update([
+                        'status' => 'completed',
+                        'stripe_payment_intent_id' => $paymentIntentId,
+                    ]);
+                    $order->refresh();
+
+                    // 商品の売上数を更新
+                    $order->load('items.product');
+                    foreach ($order->items as $item) {
+                        if ($item->product) {
+                            $item->product->increment('sales_count');
                         }
                     }
                 }
-            } catch (\Exception $e) {
-                Log::warning('Payment intent verification failed', [
-                    'order_id' => $order->id,
-                    'payment_intent_id' => $paymentIntentId,
-                    'error' => $e->getMessage(),
-                ]);
             }
         }
 
-        // Load relationships after refresh to ensure fresh data
         $order->load([
             'items' => function ($query) {
                 $query->with(['product' => function ($q) {
@@ -340,21 +230,9 @@ class OrderController extends Controller
             'user'
         ]);
 
-        // Debug: Log order items
         Log::info('Order items loaded', [
             'order_id' => $order->id,
             'items_count' => $order->items->count(),
-            'items' => $order->items->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'product_id' => $item->product_id,
-                    'product' => $item->product ? [
-                        'id' => $item->product->id,
-                        'title' => $item->product->title,
-                        'deleted_at' => $item->product->deleted_at,
-                    ] : null,
-                ];
-            })->toArray(),
         ]);
 
         return Inertia::render('Orders/Show', [
