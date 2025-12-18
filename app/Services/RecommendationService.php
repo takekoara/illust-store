@@ -6,7 +6,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductView;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 class RecommendationService
 {
@@ -123,7 +123,7 @@ class RecommendationService
     /**
      * エンゲージメント指標の最大値を計算
      */
-    private function calculateMaxMetrics(Collection $candidates): array
+    private function calculateMaxMetrics($candidates): array
     {
         return [
             'likes' => max(1, $candidates->max('likes_count') ?? 0),
