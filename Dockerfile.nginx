@@ -30,21 +30,29 @@ COPY . .
 RUN npm run build
 
 # 本番用PHPイメージ（PHP-FPM + nginx + Reverb）
-FROM php:8.2-fpm
+FROM php:8.2-fpm-bookworm
 
-# 必要最低限のパッケージをインストール
-RUN apt-get update && apt-get install -y \
+# パッケージリストを更新
+RUN apt-get update
+
+# 必要なシステムパッケージをインストール
+RUN apt-get install -y --no-install-recommends \
     nginx \
     supervisor \
     git \
     unzip \
     libpng-dev \
     libzip-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libfreetype6-dev \
     libpq-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
+    curl \
+    ca-certificates
+
+# PHP拡張機能を設定・インストール
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
+RUN docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_pgsql \
     pdo_mysql \
@@ -53,9 +61,10 @@ RUN apt-get update && apt-get install -y \
     pcntl \
     bcmath \
     gd \
-    zip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    zip
+
+# キャッシュをクリーンアップ
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Composerをインストール
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -87,11 +96,10 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
-# ポートを公開（Renderの$PORT環境変数に対応）
-# Renderでは$PORT環境変数が自動的に設定される
+# ポートを公開
 EXPOSE 8080
 
-# 起動スクリプトを作成（Laravelの初期化を実行）
+# 起動スクリプトを作成
 RUN echo '#!/bin/bash' > /usr/local/bin/start.sh && \
     echo 'cd /var/www' >> /usr/local/bin/start.sh && \
     echo 'php artisan config:clear || true' >> /usr/local/bin/start.sh && \
