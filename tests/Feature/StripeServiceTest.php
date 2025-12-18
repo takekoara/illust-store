@@ -120,9 +120,13 @@ class StripeServiceTest extends TestCase
     {
         config(['app.debug' => true]);
 
-        $mockException = $this->createMock(\Stripe\Exception\ApiErrorException::class);
-        $mockException->method('getStripeCode')->willReturn('unknown_error');
-        $mockException->method('getMessage')->willReturn('Test error message');
+        // Stripe例外は継承で作成
+        $mockException = new class('Test error message', 400) extends \Stripe\Exception\ApiErrorException {
+            public function getStripeCode(): ?string
+            {
+                return 'unknown_error';
+            }
+        };
 
         $message = $this->service->getStripeErrorMessage($mockException);
 
@@ -133,9 +137,12 @@ class StripeServiceTest extends TestCase
     {
         config(['app.debug' => false]);
 
-        $mockException = $this->createMock(\Stripe\Exception\ApiErrorException::class);
-        $mockException->method('getStripeCode')->willReturn('unknown_error');
-        $mockException->method('getMessage')->willReturn('Secret error details');
+        $mockException = new class('Secret error details', 400) extends \Stripe\Exception\ApiErrorException {
+            public function getStripeCode(): ?string
+            {
+                return 'unknown_error';
+            }
+        };
 
         $message = $this->service->getStripeErrorMessage($mockException);
 

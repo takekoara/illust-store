@@ -100,12 +100,17 @@ class UserModelTest extends TestCase
     public function test_user_has_conversations_as_user_two(): void
     {
         $otherUser = User::factory()->create();
-        Conversation::factory()->create([
+        // Conversationモデルのbootメソッドでuser_one_id < user_two_idに自動調整されるため
+        // 直接DBに挿入してbootをバイパス
+        \DB::table('conversations')->insert([
             'user_one_id' => $otherUser->id,
             'user_two_id' => $this->user->id,
+            'type' => 'direct',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
         
-        $this->assertCount(1, $this->user->conversationsAsUserTwo);
+        $this->assertCount(1, $this->user->fresh()->conversationsAsUserTwo);
     }
 
     public function test_user_conversations_returns_all_conversations(): void
