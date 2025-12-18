@@ -10,7 +10,7 @@
 
 - **管理者専用の商品投稿機能**: 著作権保護のため、管理者のみが商品を投稿可能
 - **Stripe決済統合**: 安全なクレジットカード決済
-- **リアルタイム通知**: 注文完了時の自動メール送信（デモ環境ではログに記録、本番環境では実際に送信）
+- **リアルタイムチャット**: Laravel Reverbによる商品問い合わせ機能
 - **ユーザー認証・認可**: Laravel Breezeによる認証、管理者権限管理
 - **レスポンシブデザイン**: モバイル・タブレット・デスクトップ対応
 - **画像ギャラリー**: モーダル表示、マウスホイールナビゲーション対応
@@ -18,25 +18,26 @@
 ## 🛠️ 技術スタック
 
 ### バックエンド
-- **Laravel 11**: PHPフレームワーク
-- **MySQL/SQLite**: データベース
+- **Laravel 12**: PHPフレームワーク
+- **PostgreSQL/SQLite**: データベース（本番: PostgreSQL、開発: SQLite）
 - **Stripe API**: 決済処理
-- **Laravel Policies**: 認可制御
-- **Laravel Notifications**: メール送信
+- **Laravel Reverb**: WebSocketリアルタイム通信
+- **Service Layer**: ビジネスロジックの分離
 
 ### フロントエンド
 - **React 18**: UIライブラリ
 - **TypeScript**: 型安全性
 - **Inertia.js**: サーバーサイドとフロントエンドのブリッジ
 - **Tailwind CSS**: ユーティリティファーストCSS
-- **Headless UI**: アクセシブルなUIコンポーネント
+- **Laravel Echo**: リアルタイムイベント購読
 - **@dnd-kit**: ドラッグ&ドロップ機能
-- **react-dropzone**: ファイルアップロード(管理者のみ)
 
-### 開発ツール
+### 開発・運用
 - **Vite**: ビルドツール
-- **PHPUnit**: テストフレームワーク
-- **ESLint/TypeScript**: コード品質管理
+- **PHPUnit**: テストフレームワーク（195テスト）
+- **Laravel Pint**: コードスタイル
+- **GitHub Actions**: CI/CD
+- **Railway**: ホスティング
 
 ## ✨ 実装機能
 
@@ -49,7 +50,7 @@
 
 ### 商品管理
 - [x] 商品の作成・編集・削除（管理者のみ）
-- [x] 複数画像のアップロード
+- [x] 複数画像のアップロード（AVIF形式で最適化）
 - [x] ドラッグ&ドロップによる画像並び替え
 - [x] タグ機能
 - [x] 商品の有効/無効切り替え
@@ -58,13 +59,15 @@
 ### ショッピングカート
 - [x] カートへの追加・削除
 - [x] カート内容の表示
+- [x] 合計金額の計算
 
 ### 決済機能
-- [x] Stripe決済統合
+- [x] Stripe決済統合（テストモード）
 - [x] Payment Intent作成
-- [x] Webhookによる決済完了処理
+- [x] 注文詳細ページでの決済状態確認・更新
 - [x] 注文履歴の表示
-- [x] 注文詳細ページ
+
+> **Note**: Webhook による非同期ステータス更新は実装済みですが、本番環境では未設定です。代わりに注文詳細ページ表示時にStripe APIで状態を確認し更新します。
 
 ### ユーザープロフィール
 - [x] プロフィール編集
@@ -72,180 +75,119 @@
 - [x] フォロー・フォロワー機能
 - [x] ユーザープロフィール表示
 
+### ソーシャル機能
+- [x] いいね機能
+- [x] ブックマーク機能
+- [x] リアルタイムチャット（商品問い合わせ）
+- [x] 通知機能
+
 ### その他
-- [x] 検索機能
+- [x] 検索機能（商品・ユーザー・タグ）
 - [x] ダッシュボード（統計情報表示）
 - [x] エラーページ（403, 404, 500）
 - [x] フラッシュメッセージ（日本語対応）
-- [x] 注文完了時の自動メール送信（デモ環境ではログに記録されます）
+
+## 🏗️ アーキテクチャ
+
+```
+app/
+├── Http/
+│   ├── Controllers/     # 薄いコントローラー
+│   ├── Middleware/      # 認証・管理者チェック
+│   └── Requests/        # バリデーション
+├── Services/            # ビジネスロジック層
+│   ├── CartService.php
+│   ├── ChatService.php
+│   ├── DashboardService.php
+│   ├── OrderService.php
+│   ├── ProductService.php
+│   ├── StripeService.php
+│   └── ...
+├── Models/              # Eloquentモデル
+└── Policies/            # 認可ポリシー
+
+resources/js/
+├── Components/          # 共通コンポーネント
+├── Pages/
+│   ├── Products/
+│   │   ├── components/  # ページ固有コンポーネント
+│   │   ├── shared/      # 共有コンポーネント
+│   │   └── *.tsx        # ページ本体
+│   └── ...
+├── hooks/               # カスタムフック
+└── types/               # TypeScript型定義
+```
 
 ## 📋 セットアップ手順
 
 ### 必要な環境
 - PHP 8.2以上
 - Composer
-- Node.js 18以上
-- npm または yarn
+- Node.js 20以上
+- npm
 
 ### インストール
 
-1. **リポジトリのクローン**
 ```bash
-git clone <repository-url>
+# リポジトリのクローン
+git clone https://github.com/ohlmelon/illust-store.git
 cd illust-store
-```
 
-2. **依存関係のインストール**
-```bash
-# PHP依存関係
+# 依存関係のインストール
 composer install
-
-# JavaScript依存関係
 npm install
-```
 
-3. **環境変数の設定**
-```bash
+# 環境変数の設定
 cp .env.example .env
 php artisan key:generate
-```
 
-`.env`ファイルを編集して、データベース設定を追加：
-```env
-DB_CONNECTION=sqlite
-# または
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=illust_store
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-4. **データベースのセットアップ**
-```bash
-# SQLiteの場合
+# データベースのセットアップ（SQLite）
 touch database/database.sqlite
-
-# マイグレーション実行
 php artisan migrate
-
-# 管理者ユーザーの作成
 php artisan db:seed --class=AdminUserSeeder
-```
 
-5. **ストレージリンクの作成**
-```bash
-php artisan storage:link
-```
-
-6. **アセットのビルド**
-```bash
+# アセットのビルド & 開発サーバー起動
 npm run dev
-# または本番環境
-npm run build
-```
-
-7. **開発サーバーの起動**
-```bash
-# Laravelサーバー
 php artisan serve
-
-# Vite開発サーバー（別ターミナル）
-npm run dev
 ```
 
-### Stripe設定
+### Stripe設定（テストモード）
 
-Stripe決済機能を使用する場合は、`STRIPE_SETUP.md`を参照してください。
-
-### メール設定
-
-**注意**: デモ環境では`MAIL_MAILER=log`が設定されており、メールはログファイルに記録されます。本番環境では`MAIL_MAILER=smtp`などに設定することで実際にメールが送信されます。
-
-メール送信機能を使用する場合は、`MAIL_SETUP.md`を参照してください。
-
-## 🔐 セキュリティ機能
-
-- **CSRF保護**: LaravelのCSRFトークン保護（Webhookエンドポイントは除外）
-- **XSS対策**: Bladeテンプレートの自動エスケープ
-- **SQLインジェクション対策**: Eloquent ORMによるパラメータバインディング
-- **認可制御**: Laravel Policiesとミドルウェアによるアクセス制御
-- **レート制限**: ログイン試行のレート制限
-- **パスワードハッシュ**: bcryptによるパスワードハッシュ化
-
-## 📁 プロジェクト構造
-
-```
-illust-store/
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/     # コントローラー
-│   │   ├── Middleware/      # ミドルウェア
-│   │   └── Requests/        # フォームリクエスト
-│   ├── Models/              # Eloquentモデル
-│   ├── Notifications/        # 通知クラス
-│   └── Policies/             # 認可ポリシー
-├── database/
-│   ├── migrations/           # データベースマイグレーション
-│   └── seeders/              # シーダー
-├── resources/
-│   ├── js/
-│   │   ├── Components/       # Reactコンポーネント
-│   │   ├── Layouts/          # レイアウトコンポーネント
-│   │   ├── Pages/            # ページコンポーネント
-│   │   └── types/            # TypeScript型定義
-│   └── views/                # Bladeテンプレート
-├── routes/
-│   ├── web.php               # Webルート
-│   └── auth.php              # 認証ルート
-└── tests/                     # テストファイル
+1. [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys) でテストAPIキーを取得
+2. `.env` に設定:
+```env
+STRIPE_KEY=pk_test_xxxxx
+STRIPE_SECRET=sk_test_xxxxx
+VITE_STRIPE_KEY=pk_test_xxxxx
 ```
 
 ## 🧪 テスト
 
 ```bash
-# 全テスト実行
+# 全テスト実行（195テスト）
 php artisan test
 
-# 特定のテストファイル
-php artisan test --filter=AuthenticationTest
+# コードスタイルチェック
+vendor/bin/pint --test
+
+# TypeScriptチェック
+npx tsc --noEmit
 ```
 
-## 🚀 デプロイ
+## 🔐 セキュリティ
 
-### 本番環境での注意点
-
-1. **環境変数の設定**
-   - `APP_ENV=production`
-   - `APP_DEBUG=false`
-   - データベース接続情報
-   - Stripe APIキー（本番用）
-   - メール設定
-
-2. **最適化**
-```bash
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan optimize
-```
-
-3. **アセットのビルド**
-```bash
-npm run build
-```
+- CSRF保護（Webhook除外）
+- XSS対策（自動エスケープ）
+- SQLインジェクション対策（Eloquent ORM）
+- 認可制御（Policies + Middleware）
+- レート制限
+- bcryptパスワードハッシュ
 
 ## 📝 今後の改善点
 
-- [ ] リアルタイムチャット機能（WebSocket）
-- [ ] リアルタイム通知（Pusher/Soketi）
+- [ ] Stripe Webhook の本番環境設定
 - [ ] 商品レビュー機能
-- [ ] お気に入り機能
 - [ ] 商品検索の高度化（全文検索）
-- [ ] 画像最適化（リサイズ、圧縮）
-- [ ] ユニットテスト・機能テストの追加
-- [ ] CI/CDパイプラインの構築
 - [ ] 多言語対応（i18n）
 
 ## 📄 ライセンス
@@ -254,11 +196,4 @@ npm run build
 
 ## 👤 作成者
 
-[あなたの名前]
-
-## 🙏 謝辞
-
-- [Laravel](https://laravel.com)
-- [React](https://react.dev)
-- [Inertia.js](https://inertiajs.com)
-- [Stripe](https://stripe.com)
+ポートフォリオプロジェクト
