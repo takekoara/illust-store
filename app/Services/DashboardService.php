@@ -49,11 +49,7 @@ class DashboardService
             'my_followers' => $user->followers()->count(),
             'my_following' => $user->following()->count(),
             'my_bookmarks_count' => Bookmark::where('user_id', $user->id)->count(),
-            'recent_orders' => Order::where('user_id', $user->id)
-                ->with(['items.product'])
-                ->orderBy('created_at', 'desc')
-                ->limit(5)
-                ->get(),
+            'recent_orders' => $this->getUserRecentOrders($user),
         ];
     }
 
@@ -64,7 +60,7 @@ class DashboardService
     {
         return Bookmark::where('user_id', $user->id)
             ->whereHas('product') // 削除された商品を事前に除外
-            ->with(['product.images', 'product.user'])
+            ->with(['product.images', 'product.user:id,name,username'])
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()
@@ -74,10 +70,33 @@ class DashboardService
 
     /**
      * Get recent orders for admin dashboard
+     * N+1問題を防ぐため、必要なリレーションを全てロード
      */
     private function getRecentOrders(int $limit = 5)
     {
-        return Order::with(['user', 'items.product'])
+        return Order::with([
+                'user:id,name,username,email',
+                'items.product' => function ($query) {
+                    $query->withTrashed()->with('images');
+                }
+            ])
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get recent orders for a specific user
+     * N+1問題を防ぐため、必要なリレーションを全てロード
+     */
+    private function getUserRecentOrders(User $user, int $limit = 5)
+    {
+        return Order::where('user_id', $user->id)
+            ->with([
+                'items.product' => function ($query) {
+                    $query->withTrashed()->with('images');
+                }
+            ])
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
@@ -88,10 +107,17 @@ class DashboardService
      */
     private function getRecentProducts(int $limit = 5)
     {
-        return Product::with(['user', 'images'])
+        return Product::with(['user:id,name,username', 'images'])
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
     }
-}
 
+    /**
+     * Clear admin stats cache
+     */
+    public function clearAdminStatsCache(): void
+    {
+        Cache::forget('dashboard.stats.admin');
+    }
+}
