@@ -29,6 +29,9 @@ COPY . .
 # フロントエンドをビルド
 RUN npm run build
 
+# ビルドされたファイルを確認
+RUN ls -la /app/public/build/assets/ || echo "No assets found"
+
 # 本番用PHPイメージ（PHP-FPM + nginx + Reverb）
 FROM php:8.2-fpm-bookworm
 
@@ -68,14 +71,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # 作業ディレクトリを設定
 WORKDIR /var/www
 
-# アプリケーションファイルをコピー
-COPY --chown=www-data:www-data . .
+# アプリケーションファイルをコピー（buildを除く）
+COPY . .
 
 # Composer依存関係をインストール（本番用）
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# ビルド済みのフロントエンドアセットをコピー
-COPY --from=node-builder --chown=www-data:www-data /app/public/build ./public/build
+# ビルド済みのフロントエンドアセットをコピー（後から上書き）
+COPY --from=node-builder /app/public/build ./public/build
+
+# コピーされたアセットを確認
+RUN ls -la /var/www/public/build/assets/ || echo "No assets in final image"
 
 # nginx設定ファイルをコピー
 COPY docker/nginx.conf /etc/nginx/nginx.conf
@@ -83,10 +89,14 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 # supervisor設定ファイルをコピー
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# ストレージとブートストラップキャッシュのディレクトリを作成
+# 必要なディレクトリを作成し権限を設定
 RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
-    && chown -R www-data:www-data storage bootstrap/cache
+    && mkdir -p /var/log/supervisor \
+    && mkdir -p /run/nginx \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chown -R www-data:www-data /var/www/public \
+    && chmod -R 755 /var/www/public
 
 # 環境変数を設定
 ENV APP_ENV=production
@@ -96,15 +106,16 @@ ENV APP_DEBUG=false
 EXPOSE 8080
 
 # 起動スクリプトを作成
-RUN echo '#!/bin/bash' > /usr/local/bin/start.sh && \
-    echo 'cd /var/www' >> /usr/local/bin/start.sh && \
-    echo 'php artisan config:clear || true' >> /usr/local/bin/start.sh && \
-    echo 'php artisan optimize || true' >> /usr/local/bin/start.sh && \
-    echo 'php artisan migrate --force || true' >> /usr/local/bin/start.sh && \
-    echo 'php artisan db:seed --class=ProductionProductSeeder --force || true' >> /usr/local/bin/start.sh && \
-    echo 'php artisan storage:link || true' >> /usr/local/bin/start.sh && \
-    echo 'exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf' >> /usr/local/bin/start.sh && \
-    chmod +x /usr/local/bin/start.sh
+RUN printf '#!/bin/bash\n\
+set -e\n\
+cd /var/www\n\
+php artisan config:clear || true\n\
+php artisan optimize || true\n\
+php artisan migrate --force || true\n\
+php artisan db:seed --class=ProductionProductSeeder --force || true\n\
+php artisan storage:link || true\n\
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf\n\
+' > /usr/local/bin/start.sh && chmod +x /usr/local/bin/start.sh
 
 # supervisorでnginx、PHP-FPM、Reverbを起動
 CMD ["/usr/local/bin/start.sh"]
