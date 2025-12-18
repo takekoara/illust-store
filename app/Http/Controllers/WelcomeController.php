@@ -18,10 +18,17 @@ class WelcomeController extends Controller
     public function index(): Response
     {
         // 人気商品を取得（いいね数、ブックマーク数、閲覧数、販売数でソート）
+        // PostgreSQL互換: サブクエリエイリアスをORDER BYで直接使用できないため、
+        // サブクエリを直接ORDER BY句に埋め込む
         $popularProducts = Product::with(['user:id,name,username', 'images', 'tags'])
             ->where('is_active', true)
             ->withCount(['likes', 'bookmarks', 'productViews'])
-            ->orderByRaw('(likes_count * 1.0 + bookmarks_count * 1.5 + product_views_count * 0.5 + sales_count * 2.0) DESC')
+            ->orderByRaw('(
+                (SELECT COUNT(*) FROM likes WHERE likes.product_id = products.id) * 1.0 +
+                (SELECT COUNT(*) FROM bookmarks WHERE bookmarks.product_id = products.id) * 1.5 +
+                (SELECT COUNT(*) FROM product_views WHERE product_views.product_id = products.id) * 0.5 +
+                sales_count * 2.0
+            ) DESC')
             ->limit(12)
             ->get();
 
