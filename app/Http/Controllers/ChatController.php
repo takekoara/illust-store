@@ -41,8 +41,8 @@ class ChatController extends Controller
         // スコープを使用して一貫した検索
         $conversations = Conversation::forUser($userId)
             ->with([
-                'userOne:id,name,username,avatar,avatar_type',
-                'userTwo:id,name,username,avatar,avatar_type',
+                'userOne:id,name,username,avatar_type',
+                'userTwo:id,name,username,avatar_type',
                 'product:id,title,price',
                 'messages' => function ($query) {
                     $query->latest()->limit(1)->with('user:id,name,username');
@@ -85,7 +85,7 @@ class ChatController extends Controller
         
         // 最新50件のみ取得（パフォーマンス向上）
         $messages = Message::where('conversation_id', $conversation->id)
-            ->with('user:id,name,username,avatar,avatar_type')
+            ->with('user:id,name,username,avatar_type')
             ->orderBy('created_at', 'desc')
             ->limit(50)
             ->get()
@@ -187,7 +187,7 @@ class ChatController extends Controller
         ]);
 
         // メッセージをリレーション込みで取得（必要なカラムのみ）
-        $message->load('user:id,name,username,avatar,avatar_type');
+        $message->load('user:id,name,username,avatar_type');
 
         // リアルタイム更新のためにイベントをブロードキャスト（非同期で実行してレスポンスを早くする）
         // afterResponse()でレスポンス後に実行されるため、ユーザーへの応答が早くなる

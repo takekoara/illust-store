@@ -24,7 +24,7 @@ class MessageSent implements ShouldBroadcastNow
     public function __construct(Message $message)
     {
         // 必要なカラムのみ取得（パフォーマンス向上）
-        $this->message = $message->load('user:id,name,username,avatar,avatar_type');
+        $this->message = $message->load('user:id,name,username,avatar_type');
     }
 
     /**
