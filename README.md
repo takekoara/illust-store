@@ -130,7 +130,7 @@ resources/js/
 
 ```bash
 # リポジトリのクローン
-git clone https://github.com/ohlmelon/illust-store.git
+git clone https://github.com/takekoara/illust-store.git
 cd illust-store
 
 # 依存関係のインストール
@@ -189,6 +189,13 @@ npx tsc --noEmit
 - [ ] 商品レビュー機能
 - [ ] 商品検索の高度化（全文検索）
 - [ ] 多言語対応（i18n）
+
+## 🎨 素材クレジット
+
+本プロジェクトで使用している素材：
+
+- **商品画像**: [Unsplash](https://unsplash.com/) - フリー写真素材
+- **アバターアイコン**: [ノーコピーライトガール](https://fromtheasia.com/illustration/nocopyrightgirl) - フリーイラスト素材
 
 ## 📄 ライセンス
 
