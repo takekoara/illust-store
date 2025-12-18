@@ -1,27 +1,22 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { PageProps } from '@/types';
+
+// Components
+import { ConversationItem, EmptyConversations } from './components/index';
 
 interface Conversation {
     id: number;
     type: string;
-    title?: string | null;
     other_user: {
         id: number;
         name: string;
         username: string;
-        avatar: string | null;
         avatar_type?: string | null;
     };
     product?: {
         id: number;
         title: string;
-        price: number;
-        images: Array<{
-            id: number;
-            image_path: string;
-            is_primary: boolean;
-        }>;
     } | null;
     last_message: {
         message: string;
@@ -34,7 +29,7 @@ interface Props extends PageProps {
     conversations: Conversation[];
 }
 
-export default function Index({ conversations, auth }: Props) {
+export default function Index({ conversations }: Props) {
     return (
         <AuthenticatedLayout
             header={
@@ -49,57 +44,14 @@ export default function Index({ conversations, auth }: Props) {
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         {conversations.length === 0 ? (
-                            <div className="p-8 text-center">
-                                <p className="text-gray-500">メッセージがありません。</p>
-                            </div>
+                            <EmptyConversations />
                         ) : (
                             <div className="divide-y">
                                 {conversations.map((conversation) => (
-                                    <Link
+                                    <ConversationItem
                                         key={conversation.id}
-                                        href={route('chat.show', conversation.id)}
-                                        className="block p-4 transition-colors hover:bg-gray-50"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <img
-                                                src={
-                                                    conversation.other_user.avatar_type
-                                                        ? `/images/avatars/${conversation.other_user.avatar_type}.png`
-                                                        : '/images/avatars/default-avatar.png'
-                                                }
-                                                alt={conversation.other_user.name}
-                                                className="h-12 w-12 rounded-full"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = '/images/avatars/default-avatar.png';
-                                                }}
-                                            />
-                                            <div className="flex-1">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <h3 className="font-semibold text-gray-900">
-                                                            {conversation.other_user.username ||
-                                                                conversation.other_user.name}
-                                                        </h3>
-                                                        {conversation.type === 'product' && conversation.product && (
-                                                            <p className="text-xs text-gray-500">
-                                                                商品: {conversation.product.title}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                    {conversation.unread_count > 0 && (
-                                                        <span className="rounded-full bg-indigo-600 px-2 py-1 text-xs text-white">
-                                                            {conversation.unread_count}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {conversation.last_message && (
-                                                    <p className="mt-1 truncate text-sm text-gray-500">
-                                                        {conversation.last_message.message}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </Link>
+                                        conversation={conversation}
+                                    />
                                 ))}
                             </div>
                         )}
@@ -109,4 +61,3 @@ export default function Index({ conversations, auth }: Props) {
         </AuthenticatedLayout>
     );
 }
-
