@@ -32,11 +32,8 @@ RUN npm run build
 # 本番用PHPイメージ（PHP-FPM + nginx + Reverb）
 FROM php:8.2-fpm-bookworm
 
-# パッケージリストを更新
-RUN apt-get update
-
-# 必要なシステムパッケージをインストール
-RUN apt-get install -y --no-install-recommends \
+# パッケージリストを更新して必要なパッケージをインストール
+RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
     supervisor \
     git \
@@ -46,25 +43,24 @@ RUN apt-get install -y --no-install-recommends \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
     libpq-dev \
+    libonig-dev \
     curl \
-    ca-certificates
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# PHP拡張機能を設定・インストール
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+# GD拡張機能を設定・インストール
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd
 
-RUN docker-php-ext-install -j$(nproc) \
-    pdo \
-    pdo_pgsql \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip
-
-# キャッシュをクリーンアップ
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# その他のPHP拡張機能を個別にインストール
+RUN docker-php-ext-install pdo
+RUN docker-php-ext-install pdo_pgsql
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install zip
+RUN docker-php-ext-install exif
+RUN docker-php-ext-install pcntl
+RUN docker-php-ext-install bcmath
 
 # Composerをインストール
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
