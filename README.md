@@ -31,7 +31,7 @@
 - **Tailwind CSS**: ユーティリティファーストCSS
 - **Headless UI**: アクセシブルなUIコンポーネント
 - **@dnd-kit**: ドラッグ&ドロップ機能
-- **react-dropzone**: ファイルアップロード
+- **react-dropzone**: ファイルアップロード(管理者のみ)
 
 ### 開発ツール
 - **Vite**: ビルドツール
