@@ -41,20 +41,12 @@ class CartService
 
         // 商品がアクティブかチェック
         if (! $product->is_active) {
-            return [
-                'success' => false,
-                'type' => 'error',
-                'message' => 'この商品は現在販売されていません。',
-            ];
+            return $this->fail('この商品は現在販売されていません。');
         }
 
         // 自分の商品をカートに追加できないようにする
         if ($product->user_id === Auth::id()) {
-            return [
-                'success' => false,
-                'type' => 'error',
-                'message' => '自分の商品をカートに追加することはできません。',
-            ];
+            return $this->fail('自分の商品をカートに追加することはできません。');
         }
 
         // 既にカートにあるかチェック
@@ -63,11 +55,7 @@ class CartService
             ->exists();
 
         if ($existingItem) {
-            return [
-                'success' => false,
-                'type' => 'warning',
-                'message' => 'この商品は既にカートに追加されています。',
-            ];
+            return $this->fail('この商品は既にカートに追加されています。');
         }
 
         CartItem::create([
@@ -110,30 +98,20 @@ class CartService
         $items = $cartItems ?? $this->getCartItems();
 
         if ($items->isEmpty()) {
-            return [
-                'valid' => false,
-                'message' => 'カートが空です。',
-            ];
+            return $this->fail('カートが空です。');
         }
 
-        $invalidItems = $items->filter(function ($item) {
-            return ! $item->product || ! $item->product->is_active || $item->product->price <= 0;
+        $invalidItems = $items->reject(function ($item) {
+            return $this->isValidItem($item);
         });
 
         if ($invalidItems->isNotEmpty()) {
-            return [
-                'valid' => false,
-                'message' => 'カートに無効な商品が含まれています。カートを確認してください。',
-                'invalidItems' => $invalidItems->pluck('id')->toArray(),
-            ];
+            return $this->fail('カートに無効な商品が含まれています。カートを確認してください。', ['invalidItems' => $invalidItems->pluck('id')->toArray()]);
         }
 
         $total = $this->getCartTotal($items);
         if ($total <= 0) {
-            return [
-                'valid' => false,
-                'message' => '注文金額が無効です。商品を確認してください。',
-            ];
+            return $this->fail('注文金額が無効です。商品を確認してください。');
         }
 
         return [
@@ -141,5 +119,15 @@ class CartService
             'items' => $items,
             'total' => $total,
         ];
+    }
+
+    private function isValidItem(CartItem $item): bool
+    {
+        return $item->product && $item->product->is_active && $item->product->price > 0;
+    }
+
+    private function fail(string $message, array $data = []): array
+    {
+        return array_merge(['valid' => false, 'message' => $message], $data);
     }
 }

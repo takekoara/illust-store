@@ -19,19 +19,17 @@ class ChatService
      */
     public function getUserConversations(int $userId): Collection
     {
-        // 未読数を一括で取得（N+1問題を解決）
-        $conversationIds = Conversation::forUser($userId)->pluck('id');
-        $unreadCounts = collect();
+        $conversations = $this->loadConversations($userId);
+        $unreadCounts = $this->getUnreadCounts($userId, $conversations->pluck('id'));
 
-        if ($conversationIds->isNotEmpty()) {
-            $unreadCounts = Message::whereIn('conversation_id', $conversationIds)
-                ->where('user_id', '!=', $userId)
-                ->where('is_read', false)
-                ->selectRaw('conversation_id, COUNT(*) as count')
-                ->groupBy('conversation_id')
-                ->pluck('count', 'conversation_id');
-        }
+        return $conversations->map(fn ($conversation) => $this->formatConversation($conversation, $userId, $unreadCounts));
+    }
 
+    /**
+     * Load conversations with relationships
+     */
+    private function loadConversations(int $userId): Collection
+    {
         return Conversation::forUser($userId)
             ->with([
                 'userOne:id,name,username,avatar_type',
@@ -42,22 +40,50 @@ class ChatService
                 },
             ])
             ->orderBy('last_message_at', 'desc')
-            ->get()
-            ->map(function ($conversation) use ($userId, $unreadCounts) {
-                $otherUser = $userId === $conversation->user_one_id
-                    ? $conversation->userTwo
-                    : $conversation->userOne;
+            ->get();
+    }
 
-                return [
-                    'id' => $conversation->id,
-                    'type' => $conversation->type,
-                    'title' => $conversation->title,
-                    'other_user' => $otherUser,
-                    'product' => $conversation->product,
-                    'last_message' => $conversation->messages->first(),
-                    'unread_count' => $unreadCounts->get($conversation->id, 0),
-                ];
-            });
+    /**
+     * Get unread message counts for conversations (prevents N+1)
+     */
+    private function getUnreadCounts(int $userId, Collection $conversationIds): Collection
+    {
+        if ($conversationIds->isEmpty()) {
+            return collect();
+        }
+
+        return Message::whereIn('conversation_id', $conversationIds)
+            ->where('user_id', '!=', $userId)
+            ->where('is_read', false)
+            ->selectRaw('conversation_id, COUNT(*) as count')
+            ->groupBy('conversation_id')
+            ->pluck('count', 'conversation_id');
+    }
+
+    /**
+     * Format conversation data for response
+     */
+    private function formatConversation(Conversation $conversation, int $userId, Collection $unreadCounts): array
+    {
+        return [
+            'id' => $conversation->id,
+            'type' => $conversation->type,
+            'title' => $conversation->title,
+            'other_user' => $this->getOtherUser($conversation, $userId),
+            'product' => $conversation->product,
+            'last_message' => $conversation->messages->first(),
+            'unread_count' => $unreadCounts->get($conversation->id, 0),
+        ];
+    }
+
+    /**
+     * Get the other user in a conversation
+     */
+    private function getOtherUser(Conversation $conversation, int $userId): ?User
+    {
+        return $userId === $conversation->user_one_id
+            ? $conversation->userTwo
+            : $conversation->userOne;
     }
 
     /**
